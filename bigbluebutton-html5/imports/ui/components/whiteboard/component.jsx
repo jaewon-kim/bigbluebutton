@@ -2,7 +2,7 @@ import * as React from "react";
 import _ from "lodash";
 import styled, { createGlobalStyle } from "styled-components";
 import Cursors from "./cursors/container";
-import { TldrawApp, Tldraw } from "@tldraw/tldraw";
+import { TldrawApp, Tldraw, TDShapeType, TDToolType } from "@tldraw/tldraw";
 import SlideCalcUtil, {HUNDRED_PERCENT} from '/imports/utils/slideCalcUtils';
 import Button from '/imports/ui/components/common/button/component';
 import { Utils } from "@tldraw/core";
@@ -16,6 +16,12 @@ function usePrevious(value) {
     ref.current = value;
   }, [value]);
   return ref.current;
+}
+
+const AppContext = React.createContext<TldrawApp>({})
+
+function useApp() {
+  return React.useContext(AppContext)
 }
 
 const findRemoved = (A, B) => {
@@ -40,6 +46,8 @@ const mapLanguage = (language) => {
       return language;
   }
 };
+
+
 
 const SMALL_HEIGHT = 435;
 const SMALLEST_HEIGHT = 363;
@@ -126,6 +134,8 @@ export default function Whiteboard(props) {
     notifyShapeNumberExceeded,
   } = props;
 
+  const app = useApp();
+
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
   const rDocument = React.useRef({
     name: "test",
@@ -149,6 +159,22 @@ export default function Whiteboard(props) {
   const prevSvgUri = usePrevious(svgUri);
   const language = mapLanguage(Settings?.application?.locale?.toLowerCase() || 'en');
   const [currentTool, setCurrentTool] = React.useState(null);
+
+  
+
+
+  const getBase64FromUrl = async (url) => {
+    const data = await fetch(url);
+    const blob = await data.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob); 
+      reader.onloadend = () => {
+        const base64data = reader.result;   
+        resolve(base64data);
+      }
+    });
+  }
 
   const throttledResetCurrentPoint = React.useRef(_.throttle(() => {
     setEnable(false);
@@ -378,7 +404,7 @@ export default function Whiteboard(props) {
       }
       console.log(shapes);
 
-      //next.pages[curPageId].shapes = filterInvalidShapes(shapes);
+      next.pages[curPageId].shapes = filterInvalidShapes(shapes);
       changed = true;
     }
 
@@ -692,6 +718,21 @@ export default function Whiteboard(props) {
     if (history) {
       app.replaceHistory(history);
     }
+
+    getBase64FromUrl('https://lh3.googleusercontent.com/i7cTyGnCwLIJhT1t2YpLW-zHt8ZKalgQiqfrYnZQl975-ygD_0mOXaYZMzekfKW_ydHRutDbNzeqpWoLkFR4Yx2Z2bgNj2XskKJrfw8')
+      .then((ret)=>{
+        console.log(ret);
+        var assetObj = {
+          shapes:[],
+          assets:[{
+            id:"test-id",
+            type :"image",
+            name :"test.png",
+            src : ret
+          }]          
+        };
+        console.log(assetObj)
+        app?.insertContent(assetObj);});
   };
 
   const onPatch = (e, t, reason) => {
@@ -873,6 +914,42 @@ export default function Whiteboard(props) {
     }
   };
 
+  const onSealing = () => {
+    console.log("onSealing");
+    //tldrawAPI?.openAsset?.();
+    var imgObj = {
+      shapes:[
+        {
+          id: "test-img",
+          type: "image",
+          name: "Image",
+          parentId: "currentPageId",
+          childIndex: 1,
+          point: [
+              128,
+              36.5
+          ],
+          size: [
+              100,
+              100
+          ],
+          rotation: 0,
+          style: {
+            color: "black",
+            size: "small",
+            isFilled: false,
+            dash: "draw",
+            scale: 1
+          },
+          assetId: "test-id"
+        }
+      ]   
+    };
+    tldrawAPI?.insertContent(imgObj);
+    
+
+  }
+
   const onCommand = (app, command, reason) => {
 
     console.log("=====onCommand====");
@@ -916,15 +993,15 @@ export default function Whiteboard(props) {
         document={doc}
         // disable the ability to drag and drop files onto the whiteboard
         // until we handle saving of assets in akka.
-        disableAssets={true}
+        disableAssets={false}
         // Disable automatic focus. Users were losing focus on shared notes
         // and chat on presentation mount.
         autofocus={false}
         onMount={onMount}
         showPages={false}
         showZoom={false}
-        showUI={curPres ? (isPresenter || hasWBAccess) : true}
-        showMenu={curPres ? false : true}
+        showUI={false}
+        showMenu={false}
         showMultiplayerMenu={false}
         readOnly={false}
         onPatch={onPatch}
@@ -932,6 +1009,7 @@ export default function Whiteboard(props) {
         onRedo={onRedo}
         onCommand={onCommand}
       >
+         
       </Tldraw>
     </EditableWBWrapper>
   );
@@ -991,6 +1069,62 @@ export default function Whiteboard(props) {
           hideContextMenu={!hasWBAccess && !isPresenter}
           size={size}
         />
+        <div
+          style={{
+            position: 'absolute',
+            display: 'flex',
+            gap: '10px',
+            zIndex: 10000,
+            bottom: '100px',
+            left: '100px',
+          }}
+        >
+          <button
+            onClick={() =>{
+              console.log("button sign");
+              tldrawAPI?.selectTool(TDShapeType.Draw);
+
+            }}
+            style={{
+              border: '1px solid #333',
+              background:'silver',
+              fontSize: '1.5rem',
+              padding: '0.3em 0.8em',
+              borderRadius: '0.15em',
+            }}
+          >
+            SIGN
+          </button>
+          <button
+            onClick={() =>{
+              console.log("button text");
+              tldrawAPI?.selectTool(TDShapeType.Text);
+            }}
+            style={{
+              border: '1px solid #333',
+              background:'silver',
+              fontSize: '1.5rem',
+              padding: '0.3em 0.8em',
+              borderRadius: '0.15em',
+            }}
+          >
+            INPUT TEXT
+          </button>
+          <button
+            onClick={() =>{
+              onSealing();
+            }}
+            style={{
+              border: '1px solid #333',
+              background:'silver',
+              fontSize: '1.5rem',
+              padding: '0.3em 0.8em',
+              borderRadius: '0.15em',
+            }}
+          >
+            SEAL
+          </button>
+        </div>
         
       </Cursors>
     </>
