@@ -51,7 +51,8 @@ function handleAddedAnnotation({
 }) {
   const isOwn = Auth.meetingID === meetingId && Auth.userID === userId;
   const query = addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
-
+  console.log(annotation);
+  console.log(query);
   Annotations.upsert(query.selector, query.modifier);
 
   if (isOwn) {
@@ -371,6 +372,8 @@ const getShapes = (whiteboardId, curPageId, intl) => {
     }
     result[annotation.annotationInfo.id] = annotation.annotationInfo;
   });
+  console.log("=======get Shape=======");
+  console.log(result);
   return result;
 };
 

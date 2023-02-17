@@ -86,6 +86,7 @@ export default withTracker(({
   podId,
   presentationId,
 }) => {
+  console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
 

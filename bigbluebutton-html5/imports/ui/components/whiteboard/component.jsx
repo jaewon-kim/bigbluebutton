@@ -4,6 +4,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import Cursors from "./cursors/container";
 import { TldrawApp, Tldraw } from "@tldraw/tldraw";
 import SlideCalcUtil, {HUNDRED_PERCENT} from '/imports/utils/slideCalcUtils';
+import Button from '/imports/ui/components/common/button/component';
 import { Utils } from "@tldraw/core";
 import Settings from '/imports/ui/services/settings';
 import logger from '/imports/startup/client/logger';
@@ -164,7 +165,8 @@ export default function Whiteboard(props) {
   }
 
   const isValidShapeType = (shape) => {
-    const invalidTypes = ['image', 'video'];
+    // const invalidTypes = ['image', 'video'];
+    const invalidTypes = ['video'];
     return !invalidTypes.includes(shape?.type);
   }
 
@@ -208,6 +210,8 @@ export default function Whiteboard(props) {
   }
 
   const sendShapeChanges= (app, changedShapes, redo = false) => {
+    console.log("sendShapeChanges");
+    console.log(changedShapes);
     const invalidChange = Object.keys(changedShapes)
       .find(id => !hasShapeAccess(id));
 
@@ -328,6 +332,7 @@ export default function Whiteboard(props) {
   }, [tldrawAPI]);
 
   const doc = React.useMemo(() => {
+    console.log("==React.useMemo==");
     const currentDoc = rDocument.current;
 
     let next = { ...currentDoc };
@@ -335,6 +340,7 @@ export default function Whiteboard(props) {
     let changed = false;
 
     if (next.pageStates[curPageId] && !_.isEqual(prevShapes, shapes)) {
+      console.log("==React.useMemo11111==");
       const editingShape = tldrawAPI?.getShape(tldrawAPI?.getPageState()?.editingId);
 
       if (editingShape) {
@@ -370,12 +376,14 @@ export default function Whiteboard(props) {
         }
 
       }
+      console.log(shapes);
 
-      next.pages[curPageId].shapes = filterInvalidShapes(shapes);
+      //next.pages[curPageId].shapes = filterInvalidShapes(shapes);
       changed = true;
     }
 
     if (curPageId && (!next.assets[`slide-background-asset-${curPageId}`]) || (svgUri && !_.isEqual(prevSvgUri, svgUri))) {
+      console.log("==React.useMemo2222==");
       next.assets[`slide-background-asset-${curPageId}`] = assets[`slide-background-asset-${curPageId}`]
       tldrawAPI?.patchState(
         {
@@ -389,6 +397,7 @@ export default function Whiteboard(props) {
 
     if (changed && tldrawAPI) {
       // merge patch manually (this improves performance and reduce side effects on fast updates)
+      console.log("==React.useMemo3333==");
       const patch = {
         document: {
           pages: {
@@ -416,9 +425,11 @@ export default function Whiteboard(props) {
 
     // move poll result text to bottom right
     if (next.pages[curPageId] && slidePosition) {
+      console.log("==React.useMemo444==");
       const pollResults = Object.entries(next.pages[curPageId].shapes)
                                 .filter(([id, shape]) => shape.name?.includes("poll-result"))
       for (const [id, shape] of pollResults) {
+        console.log("==React.useMemo444== pollResults");
         if (_.isEqual(shape.point, [0, 0])) {
           const shapeBounds = tldrawAPI?.getShapeBounds(id);
           if (shapeBounds) {
@@ -685,7 +696,9 @@ export default function Whiteboard(props) {
 
   const onPatch = (e, t, reason) => {
     if (!e?.pageState) return;
-
+    console.log("=====on Patch ========");
+    console.log(e);
+    console.log(t);
     // don't allow select others shapes for editing if don't have permission
     if (reason && reason.includes("set_editing_id")) {
       if (!hasShapeAccess(e.pageState.editingId)) {
@@ -789,6 +802,8 @@ export default function Whiteboard(props) {
 
     if (reason && reason === 'patched_shapes' && e?.session?.type === 'edit') {
       const patchedShape = e?.getShape(e?.getPageState()?.editingId);
+      console.log("====patchedShape=====");
+      console.log(patchedShape);
 
       if (e?.session?.initialShape?.type === 'sticky' && patchedShape?.text?.length > maxStickyNoteLength) {
         patchedShape.text = patchedShape.text.substring(0, maxStickyNoteLength);
@@ -859,6 +874,10 @@ export default function Whiteboard(props) {
   };
 
   const onCommand = (app, command, reason) => {
+
+    console.log("=====onCommand====");
+    console.log(command);
+    console.log(reason);
     setHistory(app.history);
     const changedShapes = command.after?.document?.pages[app.currentPageId]?.shapes;
     if (!isMounting && app.currentPageId !== curPageId) {
@@ -912,7 +931,8 @@ export default function Whiteboard(props) {
         onUndo={onUndo}
         onRedo={onRedo}
         onCommand={onCommand}
-      />
+      >
+      </Tldraw>
     </EditableWBWrapper>
   );
 
@@ -971,6 +991,7 @@ export default function Whiteboard(props) {
           hideContextMenu={!hasWBAccess && !isPresenter}
           size={size}
         />
+        
       </Cursors>
     </>
   );
