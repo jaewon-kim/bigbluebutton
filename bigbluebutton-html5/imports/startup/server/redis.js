@@ -2,7 +2,7 @@ import Redis from 'redis';
 import { Meteor } from 'meteor/meteor';
 import { EventEmitter2 } from 'eventemitter2';
 import { check } from 'meteor/check';
-import Logger from './logger';
+import Logger, { logger } from './logger';
 import Metrics from './metrics';
 import queue from 'queue';
 import { PrometheusAgent, METRIC_NAMES } from './prom-metrics/index.js'
@@ -257,9 +257,10 @@ class RedisPubSub {
     // System messages like Create / Destroy Meeting, etc do not have core.header.meetingId.
     // Process them in MeetingQueue['_']  --- the NO_MEETING queueId
     const meetingIdFromMessageCoreHeader = parsedMessage.core.header.meetingId || NO_MEETING_ID;
-
+    //Logger.info(`get====: ${eventName} ${this.role}`);
     if (this.role === 'frontend') {
       // receiving this message means we need to look at it. Frontends do not have instanceId.
+      
       if (meetingIdFromMessageCoreHeader === NO_MEETING_ID) { // if this is a system message
         if (eventName === 'MeetingCreatedEvtMsg' || eventName === 'SyncGetMeetingInfoRespMsg') {
           const meetingIdFromMessageMeetingProp = parsedMessage.core.body.props.meetingProp.intId;
@@ -332,6 +333,8 @@ class RedisPubSub {
       } else {
         // add to existing queue
         if (!!this.meetingsQueues[meetingIdFromMessageCoreHeader]) {
+          //Logger.info(`addd queue!!! ${parsedMessage}`);
+          //console.log(parsedMessage);
           // only handle message if we have a queue for the meeting. If we don't have a queue, it means it's for a different instanceId
           this.meetingsQueues[meetingIdFromMessageCoreHeader].add({
             pattern,
@@ -398,8 +401,8 @@ class RedisPubSub {
     if (!meetingId || !userId) {
       Logger.warn(`Publishing ${eventName} with potentially missing data userId=${userId} meetingId=${meetingId}`);
     }
-    const envelope = makeEnvelope(channel, eventName, header, payload, { meetingId, userId });
 
+    const envelope = makeEnvelope(channel, eventName, header, payload, { meetingId, userId });
     return this.pub.publish(channel, envelope, RedisPubSub.handlePublishError);
   }
 }

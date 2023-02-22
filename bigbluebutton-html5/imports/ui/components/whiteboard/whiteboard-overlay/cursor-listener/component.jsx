@@ -160,6 +160,8 @@ export default class CursorListener extends Component {
   handleTouchEnd(event) {
     event.preventDefault();
 
+    console.log("touch-end");
+
     this.clearTouchEvents();
   }
 

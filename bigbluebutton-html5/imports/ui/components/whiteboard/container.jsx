@@ -17,6 +17,7 @@ import {
   changeCurrentSlide,
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
+  sendTestEvent,
 } from './service';
 import Whiteboard from './component';
 import { UsersContext } from '../components-data/users-context/context';
@@ -24,6 +25,7 @@ import Auth from '/imports/ui/services/auth';
 import PresentationToolbarService from '../presentation/presentation-toolbar/service';
 import { layoutSelect } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
+import Meetings from '/imports/api/meetings';
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -90,6 +92,10 @@ export default withTracker(({
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
 
+  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
+  console.log("===========Meeting Info===============");
+  console.log(meetingT);
+
   shapes['slide-background-shape'] = {
     assetId: `slide-background-asset-${curPageId}`,
     childIndex: -1,
@@ -132,5 +138,6 @@ export default withTracker(({
     numberOfSlides: PresentationToolbarService.getNumberOfSlides(podId, presentationId),
     notifyNotAllowedChange,
     notifyShapeNumberExceeded,
+    sendTestEvent,
   };
 })(WhiteboardContainer);

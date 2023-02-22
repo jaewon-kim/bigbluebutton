@@ -12,6 +12,8 @@ export default function handleWhiteboardCleared({ body }, meetingId) {
 
   const { whiteboardId, fullClear, userId } = body;
 
+  
+
   if (fullClear) {
     AnnotationsStreamer(meetingId).emit('removed', { meetingId, whiteboardId });
     return clearAnnotations(meetingId, whiteboardId);

@@ -54,6 +54,7 @@ export default withTracker(() => {
   const currentMeeting = Meetings.findOne({ meetingId: Auth.meetingID },
     { fields: { lockSettingsProps: 1 } });
 
+  
   const isMeetingMuteOnStart = () => {
     const { voiceProp } = Meetings.findOne({ meetingId: Auth.meetingID },
       { fields: { 'voiceProp.muteOnStart': 1 } });

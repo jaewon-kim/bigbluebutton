@@ -35,7 +35,9 @@ export default function handleWhiteboardSend({ envelope, header, body }, meeting
   const annotations = body.annotations;
   const instanceIdFromMessage = parseInt(envelope.routing.html5InstanceId, 10) || 1;
   const myInstanceId = parseInt(body.myInstanceId, 10) || 1;
-
+  console.log(userId);
+  console.log(whiteboardId);
+  console.log(annotations);
   check(userId, String);
   check(whiteboardId, String);
   check(annotations, Array);
@@ -45,6 +47,10 @@ export default function handleWhiteboardSend({ envelope, header, body }, meeting
   }
 
   annotations.forEach(annotation => {
+    if(annotation.type="event"){
+      console.log("event occur");
+      //return;
+    } 
     annotationsQueue[meetingId].push({ meetingId, whiteboardId, userId: annotation.userId, annotation });
     if (instanceIdFromMessage === myInstanceId) {
       addAnnotation(meetingId, whiteboardId, annotation.userId, annotation);

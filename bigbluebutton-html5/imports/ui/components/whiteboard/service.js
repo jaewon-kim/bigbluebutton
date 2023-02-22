@@ -314,6 +314,12 @@ const removeIndividualAccess = (whiteboardId, userId) => {
   makeCall("removeIndividualAccess", whiteboardId, userId);
 };
 
+const sendTestEvent = () =>{
+  console.log("testEvent on service");
+  const whiteboardId = getCurrentWhiteboardId();
+  makeCall("sendWhiteboardUserEvent", whiteboardId);
+}
+
 const persistShape = (shape, whiteboardId) => {
   const annotation = {
     id: shape.id,
@@ -439,4 +445,5 @@ export {
   clearFakeAnnotations,
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
+  sendTestEvent, 
 };

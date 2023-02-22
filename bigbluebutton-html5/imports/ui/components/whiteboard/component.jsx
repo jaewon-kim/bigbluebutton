@@ -132,6 +132,7 @@ export default function Whiteboard(props) {
     presentationAreaWidth,
     maxNumberOfAnnotations,
     notifyShapeNumberExceeded,
+    sendTestEvent,
   } = props;
 
   const app = useApp();
@@ -159,9 +160,8 @@ export default function Whiteboard(props) {
   const prevSvgUri = usePrevious(svgUri);
   const language = mapLanguage(Settings?.application?.locale?.toLowerCase() || 'en');
   const [currentTool, setCurrentTool] = React.useState(null);
-
+  const [customTool, setCustomTool] = React.useState(null);
   
-
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -192,7 +192,7 @@ export default function Whiteboard(props) {
 
   const isValidShapeType = (shape) => {
     // const invalidTypes = ['image', 'video'];
-    const invalidTypes = ['video'];
+    const invalidTypes = ['video','event'];
     return !invalidTypes.includes(shape?.type);
   }
 
@@ -202,11 +202,15 @@ export default function Whiteboard(props) {
     const removedParents = [];
 
     keys.forEach((shape) => {
+      
       if (shapes[shape].parentId !== curPageId) {
         if(!keys.includes(shapes[shape].parentId)) {
           delete shapes[shape];
         }
       }else{
+        
+        
+
         if (shapes[shape].type === "group") {
           const groupChildren = shapes[shape].children;
 
@@ -222,6 +226,13 @@ export default function Whiteboard(props) {
             delete shapes[shape];
           }
         }
+      }
+
+      if (shapes[shape].type === "event") {
+        console.log("============event============="+ whiteboardId) ;
+        console.log(shapes[shape]);
+        removeShapes([shapes[shape].id], whiteboardId);
+        delete shapes[shape];
       }
     });
     // remove orphaned children
@@ -740,6 +751,12 @@ export default function Whiteboard(props) {
     console.log("=====on Patch ========");
     console.log(e);
     console.log(t);
+    console.log(reason);
+    if(reason && reason.includes("selected") && customTool == "sealing"){
+      console.log(e.currentPoint);
+      insertImgOnPoint(e.currentPoint);
+      setCustomTool("");
+    }
     // don't allow select others shapes for editing if don't have permission
     if (reason && reason.includes("set_editing_id")) {
       if (!hasShapeAccess(e.pageState.editingId)) {
@@ -914,9 +931,7 @@ export default function Whiteboard(props) {
     }
   };
 
-  const onSealing = () => {
-    console.log("onSealing");
-    //tldrawAPI?.openAsset?.();
+  const insertImgOnPoint = (_point) =>{
     var imgObj = {
       shapes:[
         {
@@ -925,10 +940,7 @@ export default function Whiteboard(props) {
           name: "Image",
           parentId: "currentPageId",
           childIndex: 1,
-          point: [
-              128,
-              36.5
-          ],
+          point: _point,
           size: [
               100,
               100
@@ -946,8 +958,18 @@ export default function Whiteboard(props) {
       ]   
     };
     tldrawAPI?.insertContent(imgObj);
-    
+  }
+  const onSealing = () => {
+    console.log("onSealing");
+    //tldrawAPI?.openAsset?.();
+    setCustomTool("sealing");
+    //insertImgOnPoint([100,100]);
 
+  }
+
+  const onEventTest= ()=>{
+    console.log("event test send");
+    sendTestEvent();
   }
 
   const onCommand = (app, command, reason) => {
@@ -1075,8 +1097,8 @@ export default function Whiteboard(props) {
             display: 'flex',
             gap: '10px',
             zIndex: 10000,
-            bottom: '100px',
-            left: '100px',
+            bottom: '10px',
+            left: '10px',
           }}
         >
           <button
@@ -1123,6 +1145,20 @@ export default function Whiteboard(props) {
             }}
           >
             SEAL
+          </button>
+          <button
+            onClick={() =>{
+              onEventTest();
+            }}
+            style={{
+              border: '1px solid #333',
+              background:'silver',
+              fontSize: '1.5rem',
+              padding: '0.3em 0.8em',
+              borderRadius: '0.15em',
+            }}
+          >
+            Event Test
           </button>
         </div>
         
