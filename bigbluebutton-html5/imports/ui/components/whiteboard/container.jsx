@@ -91,10 +91,14 @@ export default withTracker(({
   console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
+  const usingUsersContext = useContext(UsersContext);
+  const { users } = usingUsersContext;
+  const currentUser = users[Auth.meetingID][Auth.userID];
 
   const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
-  console.log("===========Meeting Info===============");
-  console.log(meetingT);
+
+  console.log(meetingT); //meetingT의 meta를 통해서 필요한 정보 전달 및 확인 가능
+  console.log(currentUser.extId); //외부에서 전달된 사용자 아이디 API의 userID를 통하여 전달되는 아이디로 NotaryWeb의 Key 로 사용가능
 
   shapes['slide-background-shape'] = {
     assetId: `slide-background-asset-${curPageId}`,

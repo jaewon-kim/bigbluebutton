@@ -161,6 +161,8 @@ export default function Whiteboard(props) {
   const language = mapLanguage(Settings?.application?.locale?.toLowerCase() || 'en');
   const [currentTool, setCurrentTool] = React.useState(null);
   const [customTool, setCustomTool] = React.useState(null);
+  const [isShowingSelection, setShowingSelection] = React.useState(false);
+  const [signPassword, setSignPassword] = React.useState('');
   
 
   const getBase64FromUrl = async (url) => {
@@ -186,6 +188,8 @@ export default function Whiteboard(props) {
       (presentationWidth) / width,
       (presentationHeight) / height
     );
+
+    console.log("calculateZoom ===" + width+","+ height+","+presentationWidth + "," + presentationHeight)
 
     return (calcedZoom === 0 || calcedZoom === Infinity) ? HUNDRED_PERCENT : calcedZoom;
   }
@@ -229,7 +233,10 @@ export default function Whiteboard(props) {
       }
 
       if (shapes[shape].type === "event") {
-        console.log("============event============="+ whiteboardId) ;
+        console.log("============event============="+ whiteboardId +"::" + currentUser?.userId) ;
+        if(currentUser?.userId !== shapes[shape].userId){
+          setShowingSelection(true);
+        }
         console.log(shapes[shape]);
         removeShapes([shapes[shape].id], whiteboardId);
         delete shapes[shape];
@@ -744,6 +751,8 @@ export default function Whiteboard(props) {
         };
         console.log(assetObj)
         app?.insertContent(assetObj);});
+
+    console.log("present WH==" + presentationWidth + ":" + presentationHeight);
   };
 
   const onPatch = (e, t, reason) => {
@@ -1056,6 +1065,132 @@ export default function Whiteboard(props) {
       onPatch={onPatch}
     />
   );
+  const onChangeSignPassword = (event) => {
+    setSignPassword(event.target.value);
+  }
+
+  const signingCert = (
+    <div
+      style={{
+        position: 'absolute',
+        left: '0px',
+        top : '0px',
+        width : '100%',
+        display: 'flex',
+        zIndex: 10000,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#000000',
+          display: 'flex',
+          padding : '20px',
+          borderRadius: '5px'
+        }}>
+        <input 
+          value={signPassword}
+          type="password"
+          onChange={onChangeSignPassword}
+          minLength={8}
+          placeholder='input password for certification'
+          >
+          
+        </input>
+        <button
+          onClick={() =>{
+            console.log(signPassword);
+            setShowingSelection(false);
+            setSignPassword('');
+          }}>
+          Signing
+        </button>
+      </div>
+    </div>
+  );
+
+  const customFunctions = (
+    <div
+      style={{
+        position: 'absolute',
+        display: 'flex',
+        gap: '10px',
+        zIndex: 10000,
+        bottom: '10px',
+        left: '10px',
+      }}>
+      <button
+        onClick={() =>{
+          console.log("button sign");
+          tldrawAPI?.selectTool(TDShapeType.Draw);
+
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SIGN
+      </button>
+      <button
+        onClick={() =>{
+          console.log("button text");
+          tldrawAPI?.selectTool(TDShapeType.Text);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        INPUT TEXT
+      </button>
+      <button
+        onClick={() =>{
+          onSealing();
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SEAL
+      </button>
+      <button
+        onClick={() =>{
+          onEventTest();
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        Event Test
+      </button>
+      <button
+        onClick={() =>{
+          setShowingSelection(true);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        Cert Signing
+      </button>
+    </div>
+  );
 
   const size = ((props.height < SMALL_HEIGHT) || (props.width < SMALL_WIDTH))
   ? TOOLBAR_SMALL : TOOLBAR_LARGE;
@@ -1091,77 +1226,8 @@ export default function Whiteboard(props) {
           hideContextMenu={!hasWBAccess && !isPresenter}
           size={size}
         />
-        <div
-          style={{
-            position: 'absolute',
-            display: 'flex',
-            gap: '10px',
-            zIndex: 10000,
-            bottom: '10px',
-            left: '10px',
-          }}
-        >
-          <button
-            onClick={() =>{
-              console.log("button sign");
-              tldrawAPI?.selectTool(TDShapeType.Draw);
-
-            }}
-            style={{
-              border: '1px solid #333',
-              background:'silver',
-              fontSize: '1.5rem',
-              padding: '0.3em 0.8em',
-              borderRadius: '0.15em',
-            }}
-          >
-            SIGN
-          </button>
-          <button
-            onClick={() =>{
-              console.log("button text");
-              tldrawAPI?.selectTool(TDShapeType.Text);
-            }}
-            style={{
-              border: '1px solid #333',
-              background:'silver',
-              fontSize: '1.5rem',
-              padding: '0.3em 0.8em',
-              borderRadius: '0.15em',
-            }}
-          >
-            INPUT TEXT
-          </button>
-          <button
-            onClick={() =>{
-              onSealing();
-            }}
-            style={{
-              border: '1px solid #333',
-              background:'silver',
-              fontSize: '1.5rem',
-              padding: '0.3em 0.8em',
-              borderRadius: '0.15em',
-            }}
-          >
-            SEAL
-          </button>
-          <button
-            onClick={() =>{
-              onEventTest();
-            }}
-            style={{
-              border: '1px solid #333',
-              background:'silver',
-              fontSize: '1.5rem',
-              padding: '0.3em 0.8em',
-              borderRadius: '0.15em',
-            }}
-          >
-            Event Test
-          </button>
-        </div>
-        
+        {customFunctions}
+        {isShowingSelection && signingCert}
       </Cursors>
     </>
   );
