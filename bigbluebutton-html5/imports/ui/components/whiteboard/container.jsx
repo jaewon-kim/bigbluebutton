@@ -87,6 +87,7 @@ export default withTracker(({
   svgUri,
   podId,
   presentationId,
+  darkTheme,
 }) => {
   console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
@@ -143,5 +144,6 @@ export default withTracker(({
     notifyNotAllowedChange,
     notifyShapeNumberExceeded,
     sendTestEvent,
+    darkTheme,
   };
 })(WhiteboardContainer);

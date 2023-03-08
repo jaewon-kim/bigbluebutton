@@ -9,6 +9,10 @@ import { Utils } from "@tldraw/core";
 import Settings from '/imports/ui/services/settings';
 import logger from '/imports/startup/client/logger';
 import KEY_CODES from '/imports/utils/keyCodes';
+import { presentationMenuHeight, borderSize, borderSizeLarge } from '/imports/ui/stylesheets/styled-components/general';
+import { colorWhite, colorBlack } from '/imports/ui/stylesheets/styled-components/palette';
+import Styled from './styles';
+import PanToolInjector from './pan-tool-injector/component';
 
 function usePrevious(value) {
   const ref = React.useRef();
@@ -56,6 +60,7 @@ const SMALLEST_WIDTH = 645;
 const TOOLBAR_SMALL = 28;
 const TOOLBAR_LARGE = 38;
 const TOOLBAR_OFFSET = 0;
+const DEFAULT_TOOL_COUNT = 9;
 
 const TldrawGlobalStyle = createGlobalStyle`
   ${({ hideContextMenu }) => hideContextMenu && `
@@ -72,6 +77,9 @@ const TldrawGlobalStyle = createGlobalStyle`
   [aria-expanded*="false"][aria-controls*="radix-"] {
     display: none;
   }
+  [class$="-side-right"] {
+    top: -1px;
+  }
   ${({ hasWBAccess, isPresenter, size }) => (hasWBAccess || isPresenter) && `
     #TD-Tools-Dots {
       height: ${size}px;
@@ -86,6 +94,37 @@ const TldrawGlobalStyle = createGlobalStyle`
     #TD-PrimaryTools button {
         height: ${size}px;
         width: ${size}px;
+    }
+    #TD-Styles {
+      border-width: ${borderSize};
+    }
+    #TD-TopPanel-Undo,
+    #TD-TopPanel-Redo,
+    #TD-Styles {
+      height: 92%;
+      border-radius: 7px;
+
+      &:hover {
+        border: solid ${borderSize} #ECECEC;
+        background-color: #ECECEC;
+      }
+      &:focus {
+        border: solid ${borderSize} ${colorBlack};
+      }
+    }
+    #TD-Styles,
+    #TD-TopPanel-Undo,
+    #TD-TopPanel-Redo {
+      margin: ${borderSize} ${borderSizeLarge} 0px ${borderSizeLarge};
+    }
+  `}
+  ${({ darkTheme }) => darkTheme && `
+    #TD-TopPanel-Undo,
+    #TD-TopPanel-Redo,
+    #TD-Styles {
+      &:focus {
+        border: solid ${borderSize} ${colorWhite} !important;
+      }
     }
   `}
 `;
@@ -122,7 +161,6 @@ export default function Whiteboard(props) {
     isRTL,
     fitToWidth,
     zoomValue,
-    isPanning,
     intl,
     svgUri,
     maxStickyNoteLength,
@@ -133,9 +171,9 @@ export default function Whiteboard(props) {
     maxNumberOfAnnotations,
     notifyShapeNumberExceeded,
     sendTestEvent,
+    darkTheme,
+    isPanning: shortcutPanning,
   } = props;
-
-  const app = useApp();
 
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
   const rDocument = React.useRef({
@@ -163,7 +201,10 @@ export default function Whiteboard(props) {
   const [customTool, setCustomTool] = React.useState(null);
   const [isShowingSelection, setShowingSelection] = React.useState(false);
   const [signPassword, setSignPassword] = React.useState('');
-  
+  const [isMoving, setIsMoving] = React.useState(false);
+  const [isPanning, setIsPanning] = React.useState(shortcutPanning);
+  const [panSelected, setPanSelected] = React.useState(isPanning);
+  const isMountedRef = React.useRef(true);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -177,6 +218,58 @@ export default function Whiteboard(props) {
       }
     });
   }
+
+
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const setSafeTLDrawAPI = (api) => {
+    if (isMountedRef.current) {
+      setTLDrawAPI(api);
+    }
+  };
+
+  const setSafeCurrentTool = (tool) => {
+    if (isMountedRef.current) {
+      setCurrentTool(tool);
+    }
+  };
+
+  const toggleOffCheck = (evt) => {
+    const clickedElement = evt.target;
+    const toolbar = document.getElementById("TD-PrimaryTools");
+    const panBtnClicked = clickedElement?.getAttribute('data-test') === 'panButton'
+    || clickedElement?.parentElement?.getAttribute('data-test') === 'panButton';
+    const panButton = document.querySelector('[data-test="panButton"]');
+    if (panBtnClicked) {
+      const dataZoom = panButton.getAttribute('data-zoom');
+      if ((dataZoom <= HUNDRED_PERCENT && !fitToWidth)) {
+        return; 
+      }
+      panButton.classList.add('select');
+      panButton.classList.remove('selectOverride');
+      return;
+    } else {
+      setIsPanning(false);
+      setPanSelected(false);
+      panButton.classList.add('selectOverride');
+      panButton.classList.remove('select');
+    }
+  };
+
+  React.useEffect(() => {
+    const toolbar = document.getElementById("TD-PrimaryTools");
+    const handleClick = (evt) => {
+      toggleOffCheck(evt);
+    };
+    toolbar?.addEventListener('click', handleClick);
+    return () => {
+      toolbar?.removeEventListener('click', handleClick);
+    };
+  }, [tldrawAPI]);
 
   const throttledResetCurrentPoint = React.useRef(_.throttle(() => {
     setEnable(false);
@@ -693,9 +786,12 @@ export default function Whiteboard(props) {
 
   const onMount = (app) => {
     const menu = document.getElementById("TD-Styles")?.parentElement;
+    setSafeCurrentTool('select');
+
     if (menu) {
       const MENU_OFFSET = `48px`;
       menu.style.position = `relative`;
+      menu.style.height = presentationMenuHeight;
       if (isRTL) {
         menu.style.left = MENU_OFFSET;
       } else {
@@ -719,7 +815,7 @@ export default function Whiteboard(props) {
       }
     );
 
-    setTLDrawAPI(app);
+    setSafeTLDrawAPI(app);
     props.setTldrawAPI(app);
     // disable for non presenter that doesn't have multi user access
     if (!hasWBAccess && !isPresenter) {
@@ -805,8 +901,14 @@ export default function Whiteboard(props) {
       }
     }
 
+    // change cursor when moving shapes
+    if (e?.session?.type === "translate" && e?.session?.status === "translating") {
+      if (!isMoving) setIsMoving(true);
+      if (reason === "set_status:idle") setIsMoving(false);
+    }
+
     if (reason && isPresenter && slidePosition && (reason.includes("zoomed") || reason.includes("panned"))) {
-      const camera = tldrawAPI.getPageState()?.camera;
+      const camera = tldrawAPI?.getPageState()?.camera;
 
       // limit bounds
       if (tldrawAPI?.viewport.maxX > slidePosition.width) {
@@ -899,8 +1001,9 @@ export default function Whiteboard(props) {
 
     if (reason && reason.includes('selected_tool')) {
       const tool = reason.split(':')[1];
-
       setCurrentTool(tool);
+      setPanSelected(false);
+      setIsPanning(false);
     }
   };
 
@@ -1217,18 +1320,37 @@ export default function Whiteboard(props) {
         isViewersCursorLocked={isViewersCursorLocked}
         isMultiUserActive={isMultiUserActive}
         isPanning={isPanning}
+        isMoving={isMoving}
         currentTool={currentTool}
       >
         {enable && (hasWBAccess || isPresenter) ? editableWB : readOnlyWB}
         <TldrawGlobalStyle
-          hasWBAccess={hasWBAccess}
-          isPresenter={isPresenter}
           hideContextMenu={!hasWBAccess && !isPresenter}
-          size={size}
+          {...{
+            hasWBAccess,
+            isPresenter,
+            size,
+            darkTheme
+          }}
         />
         {customFunctions}
         {isShowingSelection && signingCert}
       </Cursors>
+      {isPresenter && 
+        <PanToolInjector
+          {...{
+            tldrawAPI,
+            fitToWidth,
+            isPanning,
+            setIsPanning,
+            zoomValue,
+            panSelected,
+            setPanSelected,
+            currentTool,
+          }}
+          formatMessage={intl?.formatMessage}
+        />
+      }
     </>
   );
 }

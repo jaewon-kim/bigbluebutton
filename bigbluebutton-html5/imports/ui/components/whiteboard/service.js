@@ -391,7 +391,7 @@ const getCurrentPres = () => {
 const initDefaultPages = (count = 1) => {
   const pages = {};
   const pageStates = {};
-  let i = 1;
+  let i = 0;
   while (i < count + 1) {
     pages[`${i}`] = {
       id: `${i}`,

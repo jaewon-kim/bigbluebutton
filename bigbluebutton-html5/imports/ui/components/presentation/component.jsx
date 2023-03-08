@@ -918,6 +918,7 @@ class Presentation extends PureComponent {
       fullscreenElementId,
       layoutContextDispatch,
       presentationIsOpen,
+      darkTheme,
     } = this.props;
 
     const {
@@ -1022,7 +1023,7 @@ class Presentation extends PureComponent {
                   slidePosition={slidePosition}
                   getSvgRef={this.getSvgRef}
                   setTldrawAPI={this.setTldrawAPI}
-                  curPageId={currentSlide?.num.toString()}
+                  curPageId={currentSlide?.num.toString() || '0'}
                   svgUri={currentSlide?.svgUri}
                   intl={intl}
                   presentationWidth={svgWidth}
@@ -1041,6 +1042,7 @@ class Presentation extends PureComponent {
                   layoutContextDispatch={layoutContextDispatch}
                   fullscreenRef={this.refPresentationContainer}
                   presentationId={currentPresentation?.id}
+                  darkTheme={darkTheme}
                 />
                 {isFullscreen && <PollingContainer />}
               </div>
