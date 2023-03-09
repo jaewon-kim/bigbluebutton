@@ -13,6 +13,7 @@ import { presentationMenuHeight, borderSize, borderSizeLarge } from '/imports/ui
 import { colorWhite, colorBlack } from '/imports/ui/stylesheets/styled-components/palette';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
+import { makePdf } from '/imports/api/notary/notaryApi'
 
 function usePrevious(value) {
   const ref = React.useRef();
@@ -1207,6 +1208,8 @@ export default function Whiteboard(props) {
             console.log(signPassword);
             setShowingSelection(false);
             setSignPassword('');
+            const currentShapes = tldrawAPI?.document?.pages[tldrawAPI?.currentPageId]?.shapes;
+            makePdf(currentShapes);
           }}>
           Signing
         </button>
