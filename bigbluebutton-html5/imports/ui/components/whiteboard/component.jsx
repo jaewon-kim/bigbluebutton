@@ -13,7 +13,7 @@ import { presentationMenuHeight, borderSize, borderSizeLarge } from '/imports/ui
 import { colorWhite, colorBlack } from '/imports/ui/stylesheets/styled-components/palette';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
-import { makePdf } from '/imports/api/notary/notaryApi'
+
 
 function usePrevious(value) {
   const ref = React.useRef();
@@ -173,7 +173,11 @@ export default function Whiteboard(props) {
     notifyShapeNumberExceeded,
     sendTestEvent,
     darkTheme,
+    checkPassword,
+    makePdf,
+    convertShapeToAnnotation,
     isPanning: shortcutPanning,
+    
   } = props;
 
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
@@ -834,15 +838,15 @@ export default function Whiteboard(props) {
       app.replaceHistory(history);
     }
 
-    getBase64FromUrl('https://lh3.googleusercontent.com/i7cTyGnCwLIJhT1t2YpLW-zHt8ZKalgQiqfrYnZQl975-ygD_0mOXaYZMzekfKW_ydHRutDbNzeqpWoLkFR4Yx2Z2bgNj2XskKJrfw8')
+    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
       .then((ret)=>{
         console.log(ret);
         var assetObj = {
           shapes:[],
           assets:[{
-            id:"test-id",
+            id:"uid-sealing",
             type :"image",
-            name :"test.png",
+            name :"sealing.jpg",
             src : ret
           }]          
         };
@@ -1055,8 +1059,8 @@ export default function Whiteboard(props) {
           childIndex: 1,
           point: _point,
           size: [
-              100,
-              100
+              297,
+              113
           ],
           rotation: 0,
           style: {
@@ -1066,7 +1070,7 @@ export default function Whiteboard(props) {
             dash: "draw",
             scale: 1
           },
-          assetId: "test-id"
+          assetId: "uid-sealing"
         }
       ]   
     };
@@ -1294,6 +1298,20 @@ export default function Whiteboard(props) {
           borderRadius: '0.15em',
         }}>
         Cert Signing
+      </button>
+      <button
+        onClick={() =>{
+          const currentShapes = tldrawAPI?.document?.pages[tldrawAPI?.currentPageId]?.shapes;
+          convertShapeToAnnotation(currentUser,tldrawAPI?.document?.pages[tldrawAPI?.currentPageId],currentShapes);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        check Password
       </button>
     </div>
   );

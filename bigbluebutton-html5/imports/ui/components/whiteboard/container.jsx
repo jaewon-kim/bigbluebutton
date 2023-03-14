@@ -18,6 +18,7 @@ import {
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
   sendTestEvent,
+  convertShapeToAnnotation,
 } from './service';
 import Whiteboard from './component';
 import { UsersContext } from '../components-data/users-context/context';
@@ -26,6 +27,7 @@ import PresentationToolbarService from '../presentation/presentation-toolbar/ser
 import { layoutSelect } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import Meetings from '/imports/api/meetings';
+import { makePdf ,checkPassword } from '/imports/api/notary/notaryApi'
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -42,6 +44,7 @@ const WhiteboardContainer = (props) => {
   const { maxStickyNoteLength, maxNumberOfAnnotations } = WHITEBOARD_CONFIG;
   const fontFamily = WHITEBOARD_CONFIG.styles.text.family;
   const handleToggleFullScreen = (ref) => FullscreenService.toggleFullScreen(ref);
+  
 
   const { shapes } = props;
   const hasShapeAccess = (id) => {
@@ -87,19 +90,12 @@ export default withTracker(({
   svgUri,
   podId,
   presentationId,
-  darkTheme,
+  darkTheme
 }) => {
   console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
-  const usingUsersContext = useContext(UsersContext);
-  const { users } = usingUsersContext;
-  const currentUser = users[Auth.meetingID][Auth.userID];
-
-  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
-
-  console.log(meetingT); //meetingT의 meta를 통해서 필요한 정보 전달 및 확인 가능
-  console.log(currentUser.extId); //외부에서 전달된 사용자 아이디 API의 userID를 통하여 전달되는 아이디로 NotaryWeb의 Key 로 사용가능
+  
 
   shapes['slide-background-shape'] = {
     assetId: `slide-background-asset-${curPageId}`,
@@ -145,5 +141,8 @@ export default withTracker(({
     notifyShapeNumberExceeded,
     sendTestEvent,
     darkTheme,
+    checkPassword,
+    makePdf,
+    convertShapeToAnnotation,
   };
 })(WhiteboardContainer);
