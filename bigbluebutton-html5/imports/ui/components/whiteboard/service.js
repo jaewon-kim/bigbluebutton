@@ -425,7 +425,7 @@ const notifyShapeNumberExceeded = (intl, limit) => {
   if (intl) notify(intl.formatMessage(intlMessages.shapeNumberExceeded, { 0: limit }), 'warning', 'whiteboard');
 };
 
-const convertShapeToAnnotation = (_user,_document,_annotation) => {
+const convertShapeToAnnotation =  async (_user,_document,_annotation, _password) => {
   /*
   console.log(_user);
   console.log(_annotation);
@@ -436,96 +436,89 @@ const convertShapeToAnnotation = (_user,_document,_annotation) => {
   console.log(currentPresentation);
   console.log(meetingT); 
   */
-  console.log(_document);
-  const currentPresentation = Presentations.findOne({
-    current: true,
-  });
+  try {
+    console.log(_document);
+    const currentPresentation = Presentations.findOne({
+      current: true,
+    });
+    const encPwd = await axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password);
 
-  var tempPresentationId = "abcdefg";
-  var rtnObj = {
-    "email":_user.extId,
-    "request_no" : 0,
-    "notary_pwd" : "616d6c754e4756325a58497851413d3d",
-    "presentation": [{
-      "presentation_id" : currentPresentation.id,
-      "file_name" : currentPresentation.name
-    }],
-    "annotations" : []
-  };
+    console.log(encPwd);
+    var rtnObj = {
+      "email":_user.extId,
+      "request_no" : 0,
+      "notary_pwd" : encPwd.data,
+      "presentation": [{
+        "presentation_id" : currentPresentation.id,
+        "file_name" : currentPresentation.name
+      }],
+      "annotations" : []
+    };
 
-  var wRatio = 500 / _annotation["slide-background-shape"].size[0];
-  var hRatio = 700 / _annotation["slide-background-shape"].size[1];
+    var wRatio = 500 / _annotation["slide-background-shape"].size[0];
+    var hRatio = 700 / _annotation["slide-background-shape"].size[1];
 
 
-  Object.keys(_annotation).forEach( eKey => {
-    console.log(eKey);
-    console.log(_annotation[eKey]);
-    
-    const shapeItem = _annotation[eKey];
-    var annotationObj = {};
-
-    
-    if(shapeItem.type == "draw"){
-      annotationObj["annotation_type"] = "pencil";
+    Object.keys(_annotation).forEach( eKey => {
+      console.log(eKey);
+      console.log(_annotation[eKey]);
       
-      var path =[];
-      shapeItem.points.forEach( _p =>{
-        //var x = _p[0] + shapeItem.point[0];
-        //var y = _p[1] + shapeItem.point[1];
-        var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
-        var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
+      const shapeItem = _annotation[eKey];
+      var annotationObj = {};
 
-        path.push(x);
-        path.push(y);
-      })
-
-      annotationObj["path"] = path;
-    }
-    if(shapeItem.type == "text"){
-      annotationObj["annotation_type"] = "text";
-      annotationObj["fontSize"] = 15;
-      annotationObj["text"] = shapeItem.text;
-      annotationObj["point"] = [];
-      annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
-      annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
-    }
-    if(shapeItem.type == "image"){
-      annotationObj["annotation_type"] = "sealing";
-      annotationObj["point"] = [];
-      annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
-      annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
       
-    }
-    annotationObj["path_id"] = shapeItem.id;
-    //annotationObj["dimention_height"] = Math.trunc(_annotation["slide-background-shape"].size[1]);
-    //annotationObj["dimention_width"] = Math.trunc(_annotation["slide-background-shape"].size[0]);
-    annotationObj["dimention_height"] = 700;
-    annotationObj["dimention_width"] = 500;
-    annotationObj["presentation_id"] = currentPresentation.id+'_'+_document.id;
-    
-    if(eKey !== "slide-background-shape"){
-      rtnObj.annotations.push(annotationObj);
-    }
-  });
+      if(shapeItem.type == "draw"){
+        annotationObj["annotation_type"] = "pencil";
+        
+        var path =[];
+        shapeItem.points.forEach( _p =>{
+          //var x = _p[0] + shapeItem.point[0];
+          //var y = _p[1] + shapeItem.point[1];
+          var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
+          var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
 
-  console.log(JSON.stringify(rtnObj));
-  //console.log(rtnObj);
-  axios.post('https://notary-dev.connexo.co.kr:8085/bbb/meeting/meetingEnd', rtnObj)
-  .then((res)=>{
-    console.log(res);
-  })
-  .catch((err)=>{
+          path.push(x);
+          path.push(y);
+        })
+
+        annotationObj["path"] = path;
+      }
+      if(shapeItem.type == "text"){
+        annotationObj["annotation_type"] = "text";
+        annotationObj["fontSize"] = 15;
+        annotationObj["text"] = shapeItem.text;
+        annotationObj["point"] = [];
+        annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+      }
+      if(shapeItem.type == "image"){
+        annotationObj["annotation_type"] = "sealing";
+        annotationObj["point"] = [];
+        annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        
+      }
+      annotationObj["path_id"] = shapeItem.id;
+      //annotationObj["dimention_height"] = Math.trunc(_annotation["slide-background-shape"].size[1]);
+      //annotationObj["dimention_width"] = Math.trunc(_annotation["slide-background-shape"].size[0]);
+      annotationObj["dimention_height"] = 700;
+      annotationObj["dimention_width"] = 500;
+      annotationObj["presentation_id"] = currentPresentation.id+'_'+_document.id;
+      
+      if(eKey !== "slide-background-shape"){
+        rtnObj.annotations.push(annotationObj);
+      }
+    });
+
+    console.log(JSON.stringify(rtnObj));
+    //console.log(rtnObj);
+    const resEnd = await axios.post('https://notary-dev.connexo.co.kr:8085/bbb/meeting/meetingEnd', rtnObj)
+    return resEnd;
+  }
+  catch (err){
     console.log(err);
-  })
-  //meetingT의 meta를 통해서 필요한 정보 전달 및 확인 가능
-  //console.log(currentUser.extId); //외부에서 전달된 사용자 아이디 API의 userID를 통하여 전달되는 아이디로 NotaryWeb의 Key 로 사용가능
-  /*
-  
-  
-
-  
-  return rtnObj;
-  */
+    return err;
+  }
 }
 
 export {

@@ -13,7 +13,8 @@ import { presentationMenuHeight, borderSize, borderSizeLarge } from '/imports/ui
 import { colorWhite, colorBlack } from '/imports/ui/stylesheets/styled-components/palette';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
-
+import { notify } from '/imports/ui/services/notification';
+import LoadingOverlay from 'react-loading-overlay';
 
 function usePrevious(value) {
   const ref = React.useRef();
@@ -210,6 +211,7 @@ export default function Whiteboard(props) {
   const [isPanning, setIsPanning] = React.useState(shortcutPanning);
   const [panSelected, setPanSelected] = React.useState(isPanning);
   const isMountedRef = React.useRef(true);
+  const [showLoading, setShowLoading] = React.useState(false);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -1211,9 +1213,25 @@ export default function Whiteboard(props) {
           onClick={() =>{
             console.log(signPassword);
             setShowingSelection(false);
-            setSignPassword('');
+            setShowLoading(true);
             const currentShapes = tldrawAPI?.document?.pages[tldrawAPI?.currentPageId]?.shapes;
-            makePdf(currentShapes);
+            convertShapeToAnnotation(
+              currentUser,
+              tldrawAPI?.document?.pages[tldrawAPI?.currentPageId],
+              currentShapes, 
+              signPassword)
+              .then ((res)=>{
+                console.log(res);
+                notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
+                setShowLoading(false);
+              })
+              .catch( (err)=>{
+                console.log(err);
+                notify('error', 'info', 'warning');
+                setShowLoading(false);
+              });
+
+            setSignPassword('');
           }}>
           Signing
         </button>
@@ -1244,7 +1262,7 @@ export default function Whiteboard(props) {
           padding: '0.3em 0.8em',
           borderRadius: '0.15em',
         }}>
-        SIGN
+        SIGN(draw)
       </button>
       <button
         onClick={() =>{
@@ -1275,19 +1293,6 @@ export default function Whiteboard(props) {
       </button>
       <button
         onClick={() =>{
-          onEventTest();
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        Event Test
-      </button>
-      <button
-        onClick={() =>{
           setShowingSelection(true);
         }}
         style={{
@@ -1298,21 +1303,7 @@ export default function Whiteboard(props) {
           borderRadius: '0.15em',
         }}>
         Cert Signing
-      </button>
-      <button
-        onClick={() =>{
-          const currentShapes = tldrawAPI?.document?.pages[tldrawAPI?.currentPageId]?.shapes;
-          convertShapeToAnnotation(currentUser,tldrawAPI?.document?.pages[tldrawAPI?.currentPageId],currentShapes);
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        check Password
-      </button>
+      </button>      
     </div>
   );
 
@@ -1332,7 +1323,26 @@ export default function Whiteboard(props) {
   }
 
   return (
-    <>
+    <>   
+    {
+      showLoading&&
+        <div
+          style={{
+            position: 'fixed',
+            left: '0px',
+            top : '0px',
+            width : '100vw',
+            zIndex: 10000,
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display:'flex',
+            color:'white'
+          }}>
+            Processing...
+        </div> 
+      }
       <Cursors
         tldrawAPI={tldrawAPI}
         currentUser={currentUser}
@@ -1344,6 +1354,9 @@ export default function Whiteboard(props) {
         isMoving={isMoving}
         currentTool={currentTool}
       >
+          
+        
+        
         {enable && (hasWBAccess || isPresenter) ? editableWB : readOnlyWB}
         <TldrawGlobalStyle
           hideContextMenu={!hasWBAccess && !isPresenter}
@@ -1372,6 +1385,7 @@ export default function Whiteboard(props) {
           formatMessage={intl?.formatMessage}
         />
       }
+    
     </>
   );
 }
