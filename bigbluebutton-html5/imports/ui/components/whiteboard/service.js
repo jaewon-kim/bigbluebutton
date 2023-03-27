@@ -465,17 +465,19 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
       
       const shapeItem = _annotation[eKey];
       var annotationObj = {};
-
+      if(eKey == "slide-background-shape"){
+       return; 
+      }
       
       if(shapeItem.type == "draw"){
         annotationObj["annotation_type"] = "pencil";
         
         var path =[];
         shapeItem.points.forEach( _p =>{
-          //var x = _p[0] + shapeItem.point[0];
-          //var y = _p[1] + shapeItem.point[1];
-          var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
-          var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
+          var x = _p[0] + shapeItem.point[0];
+          var y = _p[1] + shapeItem.point[1];
+          // var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
+          // var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
 
           path.push(x);
           path.push(y);
@@ -488,26 +490,31 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
         annotationObj["fontSize"] = 15;
         annotationObj["text"] = shapeItem.text;
         annotationObj["point"] = [];
-        annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
-        annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        // annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        // annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        annotationObj["point"][0] = shapeItem.point[0];
+        annotationObj["point"][1] = shapeItem.point[1];
       }
       if(shapeItem.type == "image"){
         annotationObj["annotation_type"] = "sealing";
         annotationObj["point"] = [];
-        annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
-        annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        annotationObj["size"] = [];
+        // annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        // annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        annotationObj["point"][0] = shapeItem.point[0];
+        annotationObj["point"][1] = shapeItem.point[1];
+        annotationObj["size"][0] = shapeItem.size[0];
+        annotationObj["size"][1] = shapeItem.size[1];
         
       }
       annotationObj["path_id"] = shapeItem.id;
-      //annotationObj["dimention_height"] = Math.trunc(_annotation["slide-background-shape"].size[1]);
-      //annotationObj["dimention_width"] = Math.trunc(_annotation["slide-background-shape"].size[0]);
-      annotationObj["dimention_height"] = 700;
-      annotationObj["dimention_width"] = 500;
+      annotationObj["dimention_height"] = Math.trunc(_annotation["slide-background-shape"].size[1]);
+      annotationObj["dimention_width"] = Math.trunc(_annotation["slide-background-shape"].size[0]);
+      // annotationObj["dimention_height"] = 700;
+      // annotationObj["dimention_width"] = 500;
       annotationObj["presentation_id"] = currentPresentation.id+'_'+_document.id;
       
-      if(eKey !== "slide-background-shape"){
-        rtnObj.annotations.push(annotationObj);
-      }
+      rtnObj.annotations.push(annotationObj);
     });
 
     console.log(JSON.stringify(rtnObj));

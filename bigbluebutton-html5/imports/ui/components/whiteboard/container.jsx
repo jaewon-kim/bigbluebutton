@@ -27,7 +27,7 @@ import PresentationToolbarService from '../presentation/presentation-toolbar/ser
 import { layoutSelect } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import Meetings from '/imports/api/meetings';
-import { makePdf ,checkPassword } from '/imports/api/notary/notaryApi'
+import { makePdf ,checkPassword, listUserSignature } from '/imports/api/notary/notaryApi'
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -144,5 +144,6 @@ export default withTracker(({
     checkPassword,
     makePdf,
     convertShapeToAnnotation,
+    listUserSignature,
   };
 })(WhiteboardContainer);

@@ -177,6 +177,7 @@ export default function Whiteboard(props) {
     checkPassword,
     makePdf,
     convertShapeToAnnotation,
+    listUserSignature, 
     isPanning: shortcutPanning,
     
   } = props;
@@ -212,6 +213,7 @@ export default function Whiteboard(props) {
   const [panSelected, setPanSelected] = React.useState(isPanning);
   const isMountedRef = React.useRef(true);
   const [showLoading, setShowLoading] = React.useState(false);
+  const [userSignatureList, setUserSignatureList] = React.useState(null);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -225,6 +227,17 @@ export default function Whiteboard(props) {
       }
     });
   }
+
+  React.useEffect(() => {
+    console.log("list user signature");
+    listUserSignature("admin@notary.com")
+    .then((res)=>{
+      console.log(res);
+    })
+    .catch((err)=>{
+      console.log(err);
+    });
+  }, []);
 
 
   React.useEffect(() => {
