@@ -174,8 +174,6 @@ export default function Whiteboard(props) {
     notifyShapeNumberExceeded,
     sendTestEvent,
     darkTheme,
-    checkPassword,
-    makePdf,
     convertShapeToAnnotation,
     listUserSignature, 
     isPanning: shortcutPanning,
@@ -214,6 +212,8 @@ export default function Whiteboard(props) {
   const isMountedRef = React.useRef(true);
   const [showLoading, setShowLoading] = React.useState(false);
   const [userSignatureList, setUserSignatureList] = React.useState(null);
+  const [showSignatureList, setShowSignatureList] = React.useState(false);
+  const [selectedSignature, setSelectedSignature] = React.useState(null);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -232,11 +232,14 @@ export default function Whiteboard(props) {
     console.log("list user signature");
     listUserSignature("admin@notary.com")
     .then((res)=>{
-      console.log(res);
-    })
+        console.log(res.data);
+        setUserSignatureList(res.data);
+      })
     .catch((err)=>{
       console.log(err);
-    });
+    })
+    
+    
   }, []);
 
 
@@ -489,7 +492,7 @@ export default function Whiteboard(props) {
   }, [tldrawAPI]);
 
   const doc = React.useMemo(() => {
-    console.log("==React.useMemo==");
+    //console.log("==React.useMemo==");
     const currentDoc = rDocument.current;
 
     let next = { ...currentDoc };
@@ -497,7 +500,7 @@ export default function Whiteboard(props) {
     let changed = false;
 
     if (next.pageStates[curPageId] && !_.isEqual(prevShapes, shapes)) {
-      console.log("==React.useMemo11111==");
+      //console.log("==React.useMemo11111==");
       const editingShape = tldrawAPI?.getShape(tldrawAPI?.getPageState()?.editingId);
 
       if (editingShape) {
@@ -540,7 +543,7 @@ export default function Whiteboard(props) {
     }
 
     if (curPageId && (!next.assets[`slide-background-asset-${curPageId}`]) || (svgUri && !_.isEqual(prevSvgUri, svgUri))) {
-      console.log("==React.useMemo2222==");
+      //console.log("==React.useMemo2222==");
       next.assets[`slide-background-asset-${curPageId}`] = assets[`slide-background-asset-${curPageId}`]
       tldrawAPI?.patchState(
         {
@@ -554,7 +557,7 @@ export default function Whiteboard(props) {
 
     if (changed && tldrawAPI) {
       // merge patch manually (this improves performance and reduce side effects on fast updates)
-      console.log("==React.useMemo3333==");
+      //console.log("==React.useMemo3333==");
       const patch = {
         document: {
           pages: {
@@ -582,11 +585,11 @@ export default function Whiteboard(props) {
 
     // move poll result text to bottom right
     if (next.pages[curPageId] && slidePosition) {
-      console.log("==React.useMemo444==");
+      //console.log("==React.useMemo444==");
       const pollResults = Object.entries(next.pages[curPageId].shapes)
                                 .filter(([id, shape]) => shape.name?.includes("poll-result"))
       for (const [id, shape] of pollResults) {
-        console.log("==React.useMemo444== pollResults");
+        //console.log("==React.useMemo444== pollResults");
         if (_.isEqual(shape.point, [0, 0])) {
           const shapeBounds = tldrawAPI?.getShapeBounds(id);
           if (shapeBounds) {
@@ -853,33 +856,38 @@ export default function Whiteboard(props) {
       app.replaceHistory(history);
     }
 
-    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
-      .then((ret)=>{
-        console.log(ret);
-        var assetObj = {
-          shapes:[],
-          assets:[{
-            id:"uid-sealing",
-            type :"image",
-            name :"sealing.jpg",
-            src : ret
-          }]          
-        };
-        console.log(assetObj)
-        app?.insertContent(assetObj);});
+    // getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
+    //   .then((ret)=>{
+    //     console.log(ret);
+    //     var assetObj = {
+    //       shapes:[],
+    //       assets:[{
+    //         id:"uid-sealing",
+    //         type :"image",
+    //         name :"sealing.jpg",
+    //         src : ret
+    //       }]          
+    //     };
+    //     console.log(assetObj)
+    //     app?.insertContent(assetObj);});
 
     console.log("present WH==" + presentationWidth + ":" + presentationHeight);
   };
 
   const onPatch = (e, t, reason) => {
     if (!e?.pageState) return;
-    console.log("=====on Patch ========");
-    console.log(e);
-    console.log(t);
-    console.log(reason);
+    // console.log("=====on Patch ========");
+    // console.log(e);
+    // console.log(t);
+    // console.log(reason);
     if(reason && reason.includes("selected") && customTool == "sealing"){
       console.log(e.currentPoint);
       insertImgOnPoint(e.currentPoint);
+      setCustomTool("");
+    }
+    if(reason && reason.includes("selected") && customTool == "userSignature"){
+      console.log(e.currentPoint);
+      insertUserSignatureOnPoint(e.currentPoint);
       setCustomTool("");
     }
     // don't allow select others shapes for editing if don't have permission
@@ -1069,7 +1077,7 @@ export default function Whiteboard(props) {
         {
           id: "test-img",
           type: "image",
-          name: "Image",
+          name: "sealing",
           parentId: "currentPageId",
           childIndex: 1,
           point: _point,
@@ -1091,6 +1099,38 @@ export default function Whiteboard(props) {
     };
     tldrawAPI?.insertContent(imgObj);
   }
+
+  const  insertUserSignatureOnPoint= (_point) =>{
+    var imgObj = {
+      shapes:[
+        {
+          id: "uid-user-sign-" + selectedSignature.no,
+          type: "image",
+          name: "signature",
+          parentId: "currentPageId",
+          childIndex: 1,
+          point: _point,
+          size: [
+              297,
+              113
+          ],
+          rotation: 0,
+          style: {
+            color: "black",
+            size: "small",
+            isFilled: false,
+            dash: "draw",
+            scale: 1
+          },
+          assetId: "uid-usersign-" + selectedSignature.no,
+          url: selectedSignature.url,
+          sign_no : selectedSignature.no
+        }
+      ]   
+    };
+    console.log(imgObj);
+    tldrawAPI?.insertContent(imgObj);
+  }
   const onSealing = () => {
     console.log("onSealing");
     //tldrawAPI?.openAsset?.();
@@ -1102,6 +1142,26 @@ export default function Whiteboard(props) {
   const onEventTest= ()=>{
     console.log("event test send");
     sendTestEvent();
+  }
+
+  const onSelectUserSignature= (_seletedSignature)=>{
+    console.log(_seletedSignature);
+    setShowSignatureList(false);
+    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085' + _seletedSignature.url)
+    .then((ret)=>{
+      console.log(ret);
+      var assetObj = {
+        shapes:[],
+        assets:[{
+          id:"uid-usersign-" + _seletedSignature.no ,
+          type :"image",
+          name :"usign"+_seletedSignature.no+".png",
+          src : ret
+        }]          
+      };
+    console.log(assetObj)
+    tldrawAPI?.insertContent(assetObj);});
+    setSelectedSignature(_seletedSignature);
   }
 
   const onCommand = (app, command, reason) => {
@@ -1191,6 +1251,60 @@ export default function Whiteboard(props) {
   const onChangeSignPassword = (event) => {
     setSignPassword(event.target.value);
   }
+
+  const selectUserSignature = (
+    <div
+      style={{
+        position: 'absolute',
+        left: '0px',
+        top : '0px',
+        width : '100%',
+        display: 'flex',
+        zIndex: 10001,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          display: 'flex',
+          flexWrap :'wrap',
+          padding : '20px',
+          borderRadius: '5px',
+          width: '400px'
+        }}>
+          {
+            userSignatureList?.item.map(
+              _signature=>{
+                //onSelectUserSignature(_signature);
+                return (
+                   <button
+                    key={_signature.no}
+                    style={{
+                      width:'40%',
+                      margin:'10px'
+                    }}
+                    
+                    onClick={()=>{onSelectUserSignature(_signature)}}
+                    
+                    >
+                    <img
+                      src={ 'https://notary-dev.connexo.co.kr:8085'+ _signature.url }
+                      style={{
+                        width:'60%'
+                      }}
+                      />
+                    
+                  </button>
+                );
+              })
+          }
+        
+      </div>
+    </div>
+  );
 
   const signingCert = (
     <div
@@ -1306,6 +1420,19 @@ export default function Whiteboard(props) {
       </button>
       <button
         onClick={() =>{
+          setCustomTool("userSignature");
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SIGN IMG
+      </button>
+      <button
+        onClick={() =>{
           setShowingSelection(true);
         }}
         style={{
@@ -1316,6 +1443,19 @@ export default function Whiteboard(props) {
           borderRadius: '0.15em',
         }}>
         Cert Signing
+      </button> 
+      <button
+        onClick={() =>{
+          setShowSignatureList(true);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        Select User Signature
       </button>      
     </div>
   );
@@ -1381,7 +1521,9 @@ export default function Whiteboard(props) {
           }}
         />
         {customFunctions}
+        {showSignatureList && selectUserSignature}
         {isShowingSelection && signingCert}
+        
       </Cursors>
       {isPresenter && 
         <PanToolInjector

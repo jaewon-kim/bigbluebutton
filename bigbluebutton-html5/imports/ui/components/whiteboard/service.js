@@ -383,8 +383,8 @@ const getShapes = (whiteboardId, curPageId, intl) => {
     }
     result[annotation.annotationInfo.id] = annotation.annotationInfo;
   });
-  console.log("=======get Shape=======");
-  console.log(result);
+  //console.log("=======get Shape=======");
+  //console.log(result);
   return result;
 };
 
@@ -496,7 +496,7 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
         annotationObj["point"][1] = shapeItem.point[1];
       }
       if(shapeItem.type == "image"){
-        annotationObj["annotation_type"] = "sealing";
+        annotationObj["annotation_type"] = shapeItem.name;
         annotationObj["point"] = [];
         annotationObj["size"] = [];
         // annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
@@ -505,6 +505,11 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
         annotationObj["point"][1] = shapeItem.point[1];
         annotationObj["size"][0] = shapeItem.size[0];
         annotationObj["size"][1] = shapeItem.size[1];
+
+        if(shapeItem.name == "signature"){
+          annotationObj["url"] = shapeItem.url;
+          annotationObj["sign_no"] = Number(shapeItem.sign_no);
+        }
         
       }
       annotationObj["path_id"] = shapeItem.id;

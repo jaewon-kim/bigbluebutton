@@ -92,7 +92,7 @@ export default withTracker(({
   presentationId,
   darkTheme
 }) => {
-  console.log("=======withTracker============");
+  //console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
   
@@ -141,8 +141,6 @@ export default withTracker(({
     notifyShapeNumberExceeded,
     sendTestEvent,
     darkTheme,
-    checkPassword,
-    makePdf,
     convertShapeToAnnotation,
     listUserSignature,
   };

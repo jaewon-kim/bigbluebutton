@@ -33,15 +33,12 @@ export const encodePassword = (_password) =>{
 	})
 }
 
-export const listUserSignature = (_email)=>{
+export const listUserSignature = async (_email)=>{
 	console.log(_email);
-	return axios.get('https://notary-dev.connexo.co.kr:8085/api/listUserSign/' + _email, 
-	{auth:{username:'admin',password:'YWRtaW4xMQ=='}}
-	)
-	.then( (res)=>{
-		console.log(res);
-	})
-	.catch((err)=>{
-		console.log(err);
-	})
+	const res = axios.get('https://notary-dev.connexo.co.kr:8085/api/listUserSign/' + _email, 
+		{
+			auth:{username:'admin',password:'YWRtaW4xMQ=='},
+		}
+		)
+	return res;
 }
