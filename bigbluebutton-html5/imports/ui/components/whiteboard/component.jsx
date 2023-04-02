@@ -856,20 +856,20 @@ export default function Whiteboard(props) {
       app.replaceHistory(history);
     }
 
-    // getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
-    //   .then((ret)=>{
-    //     console.log(ret);
-    //     var assetObj = {
-    //       shapes:[],
-    //       assets:[{
-    //         id:"uid-sealing",
-    //         type :"image",
-    //         name :"sealing.jpg",
-    //         src : ret
-    //       }]          
-    //     };
-    //     console.log(assetObj)
-    //     app?.insertContent(assetObj);});
+    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
+      .then((ret)=>{
+        console.log(ret);
+        var assetObj = {
+          shapes:[],
+          assets:[{
+            id:"uid-sealing",
+            type :"image",
+            name :"sealing.jpg",
+            src : ret
+          }]          
+        };
+        console.log(assetObj)
+        app?.insertContent(assetObj);});
 
     console.log("present WH==" + presentationWidth + ":" + presentationHeight);
   };

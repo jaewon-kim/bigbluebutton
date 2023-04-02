@@ -446,8 +446,9 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
     console.log(encPwd);
     var rtnObj = {
       "email":_user.extId,
-      "request_no" : 0,
+      "request_no" : 2,
       "notary_pwd" : encPwd.data,
+      "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",
       "presentation": [{
         "presentation_id" : currentPresentation.id,
         "file_name" : currentPresentation.name
@@ -479,8 +480,12 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
           // var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
           // var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
 
-          path.push(x);
-          path.push(y);
+          //path.push(x);
+          //path.push(y);
+          var pathObj = {
+            "x":x,"y":y
+          }
+          path.push(pathObj);
         })
 
         annotationObj["path"] = path;
