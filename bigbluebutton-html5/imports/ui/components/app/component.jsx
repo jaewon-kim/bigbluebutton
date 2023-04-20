@@ -406,6 +406,7 @@ class App extends Component {
             height: actionsBarStyle.height,
             width: actionsBarStyle.width,
             padding: actionsBarStyle.padding,
+            backgroundColor :'lightgray',
           }
         }
       >

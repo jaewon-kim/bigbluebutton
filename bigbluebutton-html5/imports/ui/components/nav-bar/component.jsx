@@ -200,6 +200,7 @@ class NavBar extends Component {
               left: style.left,
               height: style.height,
               width: style.width,
+              background :'#f3f7fa'
             }
             : {
               position: 'relative',
@@ -216,7 +217,7 @@ class NavBar extends Component {
               && <Styled.ArrowLeft iconName="left_arrow" />}
             <Styled.NavbarToggleButton
               onClick={this.handleToggleUserList}
-              color={isPhone && isExpanded ? 'primary' : 'dark'}
+              color='black'
               size='md'
               circle
               hideLabel

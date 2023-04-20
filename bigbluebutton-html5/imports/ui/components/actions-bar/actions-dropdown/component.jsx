@@ -316,7 +316,7 @@ class ActionsDropdown extends PureComponent {
             data-test="actionsButton"
             label={intl.formatMessage(intlMessages.actionsLabel)}
             icon="plus"
-            color="primary"
+            color="success"
             size="lg"
             circle
             onClick={() => null}

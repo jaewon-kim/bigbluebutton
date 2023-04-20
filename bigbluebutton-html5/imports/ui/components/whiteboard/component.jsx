@@ -229,6 +229,7 @@ export default function Whiteboard(props) {
   }
 
   React.useEffect(() => {
+    
     console.log("list user signature");
     listUserSignature("admin@notary.com")
     .then((res)=>{

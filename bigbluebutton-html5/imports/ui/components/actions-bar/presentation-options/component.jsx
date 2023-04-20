@@ -55,7 +55,7 @@ const PresentationOptionsContainer = ({
       aria-label={intl.formatMessage(!presentationIsOpen ? intlMessages.restorePresentationLabel : intlMessages.minimizePresentationLabel)}
       aria-describedby={intl.formatMessage(!presentationIsOpen ? intlMessages.restorePresentationDesc : intlMessages.minimizePresentationDesc)}
       description={intl.formatMessage(!presentationIsOpen ? intlMessages.restorePresentationDesc : intlMessages.minimizePresentationDesc)}
-      color={presentationIsOpen ? "primary" : "default"}
+      color={presentationIsOpen ? "success" : "default"}
       hideLabel
       circle
       size="lg"

@@ -430,14 +430,16 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
   console.log(_user);
   console.log(_annotation);
   
-  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
+  
   
 
   console.log(currentPresentation);
   console.log(meetingT); 
   */
+  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
   try {
     console.log(_document);
+    console.log(meetingT);
     const currentPresentation = Presentations.findOne({
       current: true,
     });
