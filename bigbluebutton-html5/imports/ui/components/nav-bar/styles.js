@@ -6,6 +6,7 @@ import {
   colorDanger,
   colorGrayDark,
   colorBackground,
+  colorBlack,
 } from '/imports/ui/stylesheets/styled-components/palette';
 import { fontSizeBase } from '/imports/ui/stylesheets/styled-components/typography';
 import { phoneLandscape, smallOnly } from '/imports/ui/stylesheets/styled-components/breakpoints';
@@ -37,7 +38,7 @@ const Left = styled.div`
 const ArrowLeft = styled(Icon)`
   position: absolute;
   font-size: 40%;
-  color: ${colorWhite};
+  color: ${colorBlack};
   left: .25rem;
   @media ${smallOnly} {
     display: none;
@@ -65,7 +66,7 @@ const Center = styled.div`
 
 const PresentationTitle = styled.h1`
   font-weight: 400;
-  color: ${colorWhite};
+  color: ${colorBlack};
   font-size: ${fontSizeBase};
   margin: 0;
   padding: 0;

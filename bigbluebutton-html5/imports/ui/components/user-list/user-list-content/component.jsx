@@ -34,7 +34,7 @@ class UserContent extends PureComponent {
       <Styled.Content data-test="userListContent">
         {isChatEnabled() ? <UserMessagesContainer /> : null}
         {currentUser.role === ROLE_MODERATOR ? <UserCaptionsContainer /> : null}
-        <UserNotesContainer />
+        {/* <UserNotesContainer /> Notary not use a Note*/}
         {showWaitingRoom && currentUser.role === ROLE_MODERATOR
           ? (
             <WaitingUsersContainer {...{ pendingUsers }} />

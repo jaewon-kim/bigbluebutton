@@ -105,6 +105,14 @@ class PresentationToolbar extends PureComponent {
 
   componentDidMount() {
     document.addEventListener('keydown', this.switchSlide);
+    const {
+      multiUser,
+      whiteboardId,
+      removeWhiteboardGlobalAccess,
+      addWhiteboardGlobalAccess,
+    } = this.props;
+    
+    return addWhiteboardGlobalAccess(whiteboardId);
   }
 
   componentDidUpdate(prevProps) {

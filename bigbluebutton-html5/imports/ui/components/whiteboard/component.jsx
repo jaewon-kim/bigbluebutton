@@ -20,6 +20,8 @@ import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
 } from './utils';
 
+
+
 const SMALL_HEIGHT = 435;
 const SMALLEST_HEIGHT = 363;
 const SMALL_WIDTH = 800;
@@ -60,7 +62,10 @@ export default function Whiteboard(props) {
     presentationAreaWidth,
     maxNumberOfAnnotations,
     notifyShapeNumberExceeded,
+    sendTestEvent,
     darkTheme,
+    convertShapeToAnnotation,
+    listUserSignature, 
     isPanning: shortcutPanning,
     setTldrawIsMounting,
     width,
@@ -75,6 +80,7 @@ export default function Whiteboard(props) {
     animations,
     isToolbarVisible,
   } = props;
+
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
   const rDocument = React.useRef({
     name: 'test',
@@ -96,11 +102,47 @@ export default function Whiteboard(props) {
   const language = mapLanguage(Settings?.application?.locale?.toLowerCase() || 'en');
   const [currentTool, setCurrentTool] = React.useState(null);
   const [currentStyle, setCurrentStyle] = React.useState({});
+  const [customTool, setCustomTool] = React.useState(null);
+  const [isShowingSelection, setShowingSelection] = React.useState(false);
+  const [signPassword, setSignPassword] = React.useState('');
   const [isMoving, setIsMoving] = React.useState(false);
   const [isPanning, setIsPanning] = React.useState(shortcutPanning);
   const [panSelected, setPanSelected] = React.useState(isPanning);
   const isMountedRef = React.useRef(true);
   const [isToolLocked, setIsToolLocked] = React.useState(tldrawAPI?.appState?.isToolLocked);
+  const [showLoading, setShowLoading] = React.useState(false);
+  const [userSignatureList, setUserSignatureList] = React.useState(null);
+  const [showSignatureList, setShowSignatureList] = React.useState(false);
+  const [selectedSignature, setSelectedSignature] = React.useState(null);
+
+  const getBase64FromUrl = async (url) => {
+    const data = await fetch(url);
+    const blob = await data.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob); 
+      reader.onloadend = () => {
+        const base64data = reader.result;   
+        resolve(base64data);
+      }
+    });
+  }
+
+  React.useEffect(() => {
+    
+    console.log("list user signature");
+    listUserSignature("admin@notary.com")
+    .then((res)=>{
+        console.log(res.data);
+        setUserSignatureList(res.data);
+      })
+    .catch((err)=>{
+      console.log(err);
+    })
+    
+    
+  }, []);
+
 
   // eslint-disable-next-line arrow-body-style
   React.useEffect(() => {
@@ -178,6 +220,8 @@ export default function Whiteboard(props) {
       (presentationHeight) / localHeight,
     );
 
+    console.log("calculateZoom ===" + width+","+ height+","+presentationWidth + "," + presentationHeight)
+
     return (calcedZoom === 0 || calcedZoom === Infinity) ? HUNDRED_PERCENT : calcedZoom;
   };
 
@@ -239,6 +283,7 @@ export default function Whiteboard(props) {
   }, [tldrawAPI]);
 
   const doc = React.useMemo(() => {
+    //console.log("==React.useMemo==");
     const currentDoc = rDocument.current;
 
     // update document if the number of pages has changed
@@ -255,6 +300,7 @@ export default function Whiteboard(props) {
     let changed = false;
 
     if (next.pageStates[curPageId] && !_.isEqual(prevShapes, shapes)) {
+      //console.log("==React.useMemo11111==");
       const editingShape = tldrawAPI?.getShape(tldrawAPI?.getPageState()?.editingId);
 
       if (editingShape) {
@@ -290,6 +336,7 @@ export default function Whiteboard(props) {
           }, 'Whiteboard catch error on removing shapes');
         }
       }
+      console.log(shapes);
 
       next.pages[curPageId].shapes = filterInvalidShapes(shapes, curPageId, tldrawAPI);
       changed = true;
@@ -309,6 +356,7 @@ export default function Whiteboard(props) {
 
     if (changed && tldrawAPI) {
       // merge patch manually (this improves performance and reduce side effects on fast updates)
+      //console.log("==React.useMemo3333==");
       const patch = {
         document: {
           pages: {
@@ -336,6 +384,7 @@ export default function Whiteboard(props) {
 
     // move poll result text to bottom right
     if (next.pages[curPageId] && slidePosition) {
+      //console.log("==React.useMemo444==");
       const pollResults = Object.entries(next.pages[curPageId].shapes)
         .filter(([, shape]) => shape.name?.includes('poll-result'));
       pollResults.forEach(([id, shape]) => {
@@ -641,7 +690,22 @@ export default function Whiteboard(props) {
     if (history) {
       app.replaceHistory(history);
     }
+    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
+    .then((ret)=>{
+      console.log(ret);
+      var assetObj = {
+        shapes:[],
+        assets:[{
+          id:"uid-sealing",
+          type :"image",
+          name :"sealing.jpg",
+          src : ret
+        }]          
+      };
+      console.log(assetObj)
+      app?.insertContent(assetObj);});
 
+    console.log("present WH==" + presentationWidth + ":" + presentationHeight);
     if (curPageId) {
       app.patchState(
         {
@@ -657,6 +721,16 @@ export default function Whiteboard(props) {
 
   const onPatch = (e, t, reason) => {
     if (!e?.pageState || !reason) return;
+    if(reason && reason.includes("selected") && customTool == "sealing"){
+      console.log(e.currentPoint);
+      insertImgOnPoint(e.currentPoint);
+      setCustomTool("");
+    }
+    if(reason && reason.includes("selected") && customTool == "userSignature"){
+      console.log(e.currentPoint);
+      insertUserSignatureOnPoint(e.currentPoint);
+      setCustomTool("");
+    }
     if (((isPanning || panSelected) && (reason === 'selected' || reason === 'set_hovered_id'))) {
       e.patchState(
         {
@@ -793,6 +867,8 @@ export default function Whiteboard(props) {
 
     if (reason && reason === 'patched_shapes' && e?.session?.type === 'edit') {
       const patchedShape = e?.getShape(e?.getPageState()?.editingId);
+      console.log("====patchedShape=====");
+      console.log(patchedShape);
 
       if (e?.session?.initialShape?.type === 'sticky' && patchedShape?.text?.length > maxStickyNoteLength) {
         patchedShape.text = patchedShape.text.substring(0, maxStickyNoteLength);
@@ -889,6 +965,98 @@ export default function Whiteboard(props) {
       );
     }
   };
+  const insertImgOnPoint = (_point) =>{
+    var imgObj = {
+      shapes:[
+        {
+          id: "test-img",
+          type: "image",
+          name: "sealing",
+          parentId: "currentPageId",
+          childIndex: 1,
+          point: _point,
+          size: [
+              297,
+              113
+          ],
+          rotation: 0,
+          style: {
+            color: "black",
+            size: "small",
+            isFilled: false,
+            dash: "draw",
+            scale: 1
+          },
+          assetId: "uid-sealing"
+        }
+      ]   
+    };
+    tldrawAPI?.insertContent(imgObj);
+  }
+
+  const  insertUserSignatureOnPoint= (_point) =>{
+    var imgObj = {
+      shapes:[
+        {
+          id: "uid-user-sign-" + selectedSignature.no,
+          type: "image",
+          name: "signature",
+          parentId: "currentPageId",
+          childIndex: 1,
+          point: _point,
+          size: [
+              297,
+              113
+          ],
+          rotation: 0,
+          style: {
+            color: "black",
+            size: "small",
+            isFilled: false,
+            dash: "draw",
+            scale: 1
+          },
+          assetId: "uid-usersign-" + selectedSignature.no,
+          url: selectedSignature.url,
+          sign_no : selectedSignature.no
+        }
+      ]   
+    };
+    console.log(imgObj);
+    tldrawAPI?.insertContent(imgObj);
+  }
+  const onSealing = () => {
+    console.log("onSealing");
+    //tldrawAPI?.openAsset?.();
+    setCustomTool("sealing");
+    //insertImgOnPoint([100,100]);
+
+  }
+
+  const onEventTest= ()=>{
+    console.log("event test send");
+    sendTestEvent();
+  }
+
+  const onSelectUserSignature= (_seletedSignature)=>{
+    console.log(_seletedSignature);
+    setShowSignatureList(false);
+    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085' + _seletedSignature.url)
+    .then((ret)=>{
+      console.log(ret);
+      var assetObj = {
+        shapes:[],
+        assets:[{
+          id:"uid-usersign-" + _seletedSignature.no ,
+          type :"image",
+          name :"usign"+_seletedSignature.no+".png",
+          src : ret
+        }]          
+      };
+    console.log(assetObj)
+    tldrawAPI?.insertContent(assetObj);});
+    setSelectedSignature(_seletedSignature);
+  }
 
   const onCommand = (app, command) => {
     const isFirstCommand = command.id === "change_page" && command.before?.appState.currentPageId === "0";
@@ -949,15 +1117,15 @@ export default function Whiteboard(props) {
         document={doc}
         // disable the ability to drag and drop files onto the whiteboard
         // until we handle saving of assets in akka.
-        disableAssets
+        disableAssets={false}
         // Disable automatic focus. Users were losing focus on shared notes
         // and chat on presentation mount.
         autofocus={false}
         onMount={onMount}
         showPages={false}
         showZoom={false}
-        showUI={curPres ? (isPresenter || hasWBAccess) : true}
-        showMenu={!curPres}
+        showUI={false}
+        showMenu={false}
         showMultiplayerMenu={false}
         readOnly={false}
         onPatch={onPatch}
@@ -987,6 +1155,217 @@ export default function Whiteboard(props) {
       readOnly
       onPatch={onPatch}
     />
+  );
+  const onChangeSignPassword = (event) => {
+    setSignPassword(event.target.value);
+  }
+
+  const selectUserSignature = (
+    <div
+      style={{
+        position: 'absolute',
+        left: '0px',
+        top : '0px',
+        width : '100%',
+        display: 'flex',
+        zIndex: 10001,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          display: 'flex',
+          flexWrap :'wrap',
+          padding : '20px',
+          borderRadius: '5px',
+          width: '400px'
+        }}>
+          {
+            userSignatureList?.item.map(
+              _signature=>{
+                //onSelectUserSignature(_signature);
+                return (
+                   <button
+                    key={_signature.no}
+                    style={{
+                      width:'40%',
+                      margin:'10px'
+                    }}
+                    
+                    onClick={()=>{onSelectUserSignature(_signature)}}
+                    
+                    >
+                    <img
+                      src={ 'https://notary-dev.connexo.co.kr:8085'+ _signature.url }
+                      style={{
+                        width:'60%'
+                      }}
+                      />
+                    
+                  </button>
+                );
+              })
+          }
+        
+      </div>
+    </div>
+  );
+
+  const signingCert = (
+    <div
+      style={{
+        position: 'absolute',
+        left: '0px',
+        top : '0px',
+        width : '100%',
+        display: 'flex',
+        zIndex: 10000,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#000000',
+          display: 'flex',
+          padding : '20px',
+          borderRadius: '5px'
+        }}>
+        <input 
+          value={signPassword}
+          type="password"
+          onChange={onChangeSignPassword}
+          minLength={8}
+          placeholder='input password for certification'
+          >
+          
+        </input>
+        <button
+          onClick={() =>{
+            console.log(signPassword);
+            setShowingSelection(false);
+            setShowLoading(true);
+            const currentShapes = tldrawAPI?.document?.pages[tldrawAPI?.currentPageId]?.shapes;
+            convertShapeToAnnotation(
+              currentUser,
+              tldrawAPI?.document?.pages[tldrawAPI?.currentPageId],
+              currentShapes, 
+              signPassword)
+              .then ((res)=>{
+                console.log(res);
+                notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
+                setShowLoading(false);
+              })
+              .catch( (err)=>{
+                console.log(err);
+                notify('error', 'info', 'warning');
+                setShowLoading(false);
+              });
+
+            setSignPassword('');
+          }}>
+          Signing
+        </button>
+      </div>
+    </div>
+  );
+
+  const customFunctions = (
+    <div
+      style={{
+        position: 'absolute',
+        display: 'flex',
+        gap: '10px',
+        zIndex: 10000,
+        bottom: '10px',
+        left: '10px',
+      }}>
+      <button
+        onClick={() =>{
+          console.log("button sign");
+          tldrawAPI?.selectTool(TDShapeType.Draw);
+
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SIGN(draw)
+      </button>
+      <button
+        onClick={() =>{
+          console.log("button text");
+          tldrawAPI?.selectTool(TDShapeType.Text);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        INPUT TEXT
+      </button>
+      <button
+        onClick={() =>{
+          onSealing();
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SEAL
+      </button>
+      <button
+        onClick={() =>{
+          setCustomTool("userSignature");
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        SIGN IMG
+      </button>
+      <button
+        onClick={() =>{
+          setShowingSelection(true);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        Cert Signing
+      </button> 
+      <button
+        onClick={() =>{
+          setShowSignatureList(true);
+        }}
+        style={{
+          border: '1px solid #333',
+          background:'silver',
+          fontSize: '1rem',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.15em',
+        }}>
+        Select User Signature
+      </button>      
+    </div>
   );
 
   const size = ((height < SMALL_HEIGHT) || (width < SMALL_WIDTH))
@@ -1041,6 +1420,10 @@ export default function Whiteboard(props) {
             isToolbarVisible,
           }}
         />
+        {customFunctions}
+        {showSignatureList && selectUserSignature}
+        {isShowingSelection && signingCert}
+        
       </Cursors>
       {isPresenter && (
         <PanToolInjector

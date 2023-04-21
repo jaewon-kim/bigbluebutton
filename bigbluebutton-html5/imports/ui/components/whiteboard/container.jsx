@@ -20,6 +20,8 @@ import {
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
   toggleToolsAnimations,
+  sendTestEvent,
+  convertShapeToAnnotation,
 } from './service';
 import Whiteboard from './component';
 import { UsersContext } from '../components-data/users-context/context';
@@ -28,6 +30,8 @@ import PresentationToolbarService from '../presentation/presentation-toolbar/ser
 import { layoutSelect } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import deviceInfo from '/imports/utils/deviceInfo';
+import Meetings from '/imports/api/meetings';
+import { makePdf ,checkPassword, listUserSignature } from '/imports/api/notary/notaryApi'
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -45,6 +49,7 @@ const WhiteboardContainer = (props) => {
   const { maxStickyNoteLength, maxNumberOfAnnotations } = WHITEBOARD_CONFIG;
   const fontFamily = WHITEBOARD_CONFIG.styles.text.family;
   const handleToggleFullScreen = (ref) => FullscreenService.toggleFullScreen(ref);
+  
 
   const { shapes } = props;
   const hasShapeAccess = (id) => {
@@ -92,8 +97,9 @@ export default withTracker(({
   svgUri,
   podId,
   presentationId,
-  darkTheme,
+  darkTheme
 }) => {
+  //console.log("=======withTracker============");
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
   const { isIphone } = deviceInfo;
@@ -140,11 +146,14 @@ export default withTracker(({
     numberOfSlides: PresentationToolbarService.getNumberOfSlides(podId, presentationId),
     notifyNotAllowedChange,
     notifyShapeNumberExceeded,
+    sendTestEvent,
     darkTheme,
     whiteboardToolbarAutoHide: SettingsService?.application?.whiteboardToolbarAutoHide,
     animations: SettingsService?.application?.animations,
     toggleToolsAnimations,
     isIphone,
+    convertShapeToAnnotation,
+    listUserSignature,
   };
 })(WhiteboardContainer);
 

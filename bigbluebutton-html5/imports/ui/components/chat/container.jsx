@@ -98,7 +98,8 @@ const ChatContainer = (props) => {
       id: sysMessagesIds.welcomeId,
       content: [{
         id: sysMessagesIds.welcomeId,
-        text: welcomeProp.welcomeMsg,
+        // text: welcomeProp.welcomeMsg,
+        text: 'Welcome to session for notarize', //for Notary 
         time: loginTime,
       }],
       key: sysMessagesIds.welcomeId,

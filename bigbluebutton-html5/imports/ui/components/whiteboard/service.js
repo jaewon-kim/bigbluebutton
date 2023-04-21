@@ -11,6 +11,11 @@ import { defineMessages } from 'react-intl';
 import { notify } from '/imports/ui/services/notification';
 import caseInsensitiveReducer from '/imports/utils/caseInsensitiveReducer';
 import { getTextSize } from './utils';
+import React, { useContext } from 'react';
+import { UsersContext } from '../components-data/users-context/context';
+import Meetings from '/imports/api/meetings';
+import Presentations from '/imports/api/presentations';
+import axios from 'axios';
 
 const Annotations = new Mongo.Collection(null);
 
@@ -35,6 +40,10 @@ async function handleAddedAnnotation({
 }) {
   const query = await addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
 
+  const isOwn = Auth.meetingID === meetingId && Auth.userID === userId;
+  //const query = addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
+  console.log(annotation);
+  console.log(query);
   Annotations.upsert(query.selector, query.modifier);
 }
 
@@ -249,6 +258,12 @@ const changeWhiteboardAccess = (userId, access) => {
   }
 };
 
+const sendTestEvent = () =>{
+  console.log("testEvent on service");
+  const whiteboardId = getCurrentWhiteboardId();
+  makeCall("sendWhiteboardUserEvent", whiteboardId);
+}
+
 const persistShape = (shape, whiteboardId) => {
   const annotation = {
     id: shape.id,
@@ -327,6 +342,8 @@ const getShapes = (whiteboardId, curPageId, intl) => {
     }
     result[annotation.annotationInfo.id] = annotation.annotationInfo;
   });
+  //console.log("=======get Shape=======");
+  //console.log(result);
   return result;
 };
 
@@ -376,7 +393,120 @@ const toggleToolsAnimations = (activeAnim, anim, time) => {
     topToolbar.style.transition = `opacity ${time} ease-in-out`;
     tdTools.style.transition = `opacity ${time} ease-in-out`;
     tdTools?.classList?.add(anim);
-    topToolbar?.classList?.add(anim);
+    topToolbar?.classList?.add(anim);}
+  }
+const convertShapeToAnnotation =  async (_user,_document,_annotation, _password) => {
+  /*
+  console.log(_user);
+  console.log(_annotation);
+  
+  
+  
+
+  console.log(currentPresentation);
+  console.log(meetingT); 
+  */
+  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
+  try {
+    console.log(_document);
+    console.log(meetingT);
+    const currentPresentation = Presentations.findOne({
+      current: true,
+    });
+    const encPwd = await axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password);
+
+    console.log(encPwd);
+    var rtnObj = {
+      "email":_user.extId,
+      "request_no" : 2,
+      "notary_pwd" : encPwd.data,
+      "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",
+      "presentation": [{
+        "presentation_id" : currentPresentation.id,
+        "file_name" : currentPresentation.name
+      }],
+      "annotations" : []
+    };
+
+    var wRatio = 500 / _annotation["slide-background-shape"].size[0];
+    var hRatio = 700 / _annotation["slide-background-shape"].size[1];
+
+
+    Object.keys(_annotation).forEach( eKey => {
+      console.log(eKey);
+      console.log(_annotation[eKey]);
+      
+      const shapeItem = _annotation[eKey];
+      var annotationObj = {};
+      if(eKey == "slide-background-shape"){
+       return; 
+      }
+      
+      if(shapeItem.type == "draw"){
+        annotationObj["annotation_type"] = "pencil";
+        
+        var path =[];
+        shapeItem.points.forEach( _p =>{
+          var x = _p[0] + shapeItem.point[0];
+          var y = _p[1] + shapeItem.point[1];
+          // var x = (_p[0] + shapeItem.point[0])/_annotation["slide-background-shape"].size[0]*100;
+          // var y = (_p[1] + shapeItem.point[1])/_annotation["slide-background-shape"].size[1]*100;
+
+          //path.push(x);
+          //path.push(y);
+          var pathObj = {
+            "x":x,"y":y
+          }
+          path.push(pathObj);
+        })
+
+        annotationObj["path"] = path;
+      }
+      if(shapeItem.type == "text"){
+        annotationObj["annotation_type"] = "text";
+        annotationObj["fontSize"] = 15;
+        annotationObj["text"] = shapeItem.text;
+        annotationObj["point"] = [];
+        // annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        // annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        annotationObj["point"][0] = shapeItem.point[0];
+        annotationObj["point"][1] = shapeItem.point[1];
+      }
+      if(shapeItem.type == "image"){
+        annotationObj["annotation_type"] = shapeItem.name;
+        annotationObj["point"] = [];
+        annotationObj["size"] = [];
+        // annotationObj["point"][0] = Math.trunc(shapeItem.point[0]/_annotation["slide-background-shape"].size[0]*100);
+        // annotationObj["point"][1] = Math.trunc(shapeItem.point[1]/_annotation["slide-background-shape"].size[1]*100);
+        annotationObj["point"][0] = shapeItem.point[0];
+        annotationObj["point"][1] = shapeItem.point[1];
+        annotationObj["size"][0] = shapeItem.size[0];
+        annotationObj["size"][1] = shapeItem.size[1];
+
+        if(shapeItem.name == "signature"){
+          annotationObj["url"] = shapeItem.url;
+          annotationObj["sign_no"] = Number(shapeItem.sign_no);
+        }
+        
+      }
+      annotationObj["path_id"] = shapeItem.id;
+      annotationObj["dimention_height"] = Math.trunc(_annotation["slide-background-shape"].size[1]);
+      annotationObj["dimention_width"] = Math.trunc(_annotation["slide-background-shape"].size[0]);
+      // annotationObj["dimention_height"] = 700;
+      // annotationObj["dimention_width"] = 500;
+      annotationObj["presentation_id"] = currentPresentation.id+'_'+_document.id;
+      
+      rtnObj.annotations.push(annotationObj);
+    });
+
+    console.log(JSON.stringify(rtnObj));
+    //console.log(rtnObj);
+    const resEnd = await axios.post('https://notary-dev.connexo.co.kr:8085/bbb/meeting/meetingEnd', rtnObj)
+    return resEnd;
+  }
+  catch (err){
+    console.log(err);
+    return err;
   }
 }
 
@@ -402,4 +532,6 @@ export {
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
   toggleToolsAnimations,
+  sendTestEvent, 
+  convertShapeToAnnotation, 
 };

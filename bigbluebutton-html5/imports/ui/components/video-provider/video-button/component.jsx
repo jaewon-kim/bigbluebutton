@@ -184,7 +184,7 @@ const JoinVideoButton = ({
         data-test={hasVideoStream ? 'leaveVideo' : 'joinVideo'}
         onClick={handleOnClick}
         hideLabel
-        color={isSharing ? 'primary' : 'default'}
+        color={isSharing ? 'primary' : 'black'}
         icon={isSharing ? 'video' : 'video_off'}
         ghost={!isSharing}
         size="lg"

@@ -6,7 +6,7 @@ import {
   borderSizeLarge,
   borderSizeSmall,
 } from '/imports/ui/stylesheets/styled-components/general';
-import { colorWhite, colorPrimary, colorDangerDark, colorGray } from '/imports/ui/stylesheets/styled-components/palette';
+import { colorWhite, colorPrimary, colorDangerDark, colorGray, colorBlack } from '/imports/ui/stylesheets/styled-components/palette';
 
 const RecordingIndicatorIcon = styled.span`
   width: ${fontSizeLarge};
@@ -55,9 +55,10 @@ const RecordingControl = styled.div`
 
   ${({ recording }) => !recording && `
     padding: 7px;
+    background-color: ${colorBlack};
     border: ${borderSizeSmall} solid ${colorWhite};
     border-radius: 2em 2em;
-
+    
     &:focus {
       padding: 5px;
       border: ${borderSizeLarge} solid ${colorWhite};
