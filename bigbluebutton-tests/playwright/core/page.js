@@ -310,7 +310,7 @@ class Page {
   }
 
   async dragDropSelector(selector, position) {
-    await this.page.locator(selector).dragTo(this.page.locator(position));
+    await this.page.locator(selector).dragTo(this.page.locator(position), { timeout: ELEMENT_WAIT_TIME });
   }
 
   async checkElementCount(selector, count) {
@@ -340,6 +340,10 @@ class Page {
     const avatarInToastElementColor = this.page.locator(selector1);
     const avatarInUserListColor = this.page.locator(selector2);
     await expect(getBackgroundColorComputed(avatarInToastElementColor)).toStrictEqual(getBackgroundColorComputed(avatarInUserListColor));
+  }
+
+  async reloadPage() {
+    await this.page.reload();
   }
 }
 

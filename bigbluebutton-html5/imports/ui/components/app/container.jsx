@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
-import { defineMessages, injectIntl } from 'react-intl';
 import Auth from '/imports/ui/services/auth';
 import Users from '/imports/api/users';
 import Meetings, { LayoutMeetings } from '/imports/api/meetings';
@@ -38,13 +37,6 @@ import App from './component';
 
 const CUSTOM_STYLE_URL = Meteor.settings.public.app.customStyleUrl;
 
-const intlMessages = defineMessages({
-  waitingApprovalMessage: {
-    id: 'app.guest.waiting',
-    description: 'Message while a guest is waiting to be approved',
-  },
-});
-
 const endMeeting = (code, ejectedReason) => {
   Session.set('codeError', code);
   Session.set('errorMessageDescription', ejectedReason);
@@ -59,6 +51,8 @@ const AppContainer = (props) => {
     });
     return ref.current;
   }
+
+  const layoutType = useRef(null);
 
   const {
     actionsbar,
@@ -100,6 +94,15 @@ const AppContainer = (props) => {
     && (presentationIsOpen || presentationRestoreOnUpdate)) && isPresentationEnabled();
 
   const { focusedId } = cameraDock;
+
+  if(
+    layoutContextDispatch 
+    &&  (typeof meetingLayout != "undefined")
+    && (layoutType.current != meetingLayout)
+    ) {
+      layoutType.current = meetingLayout;
+      MediaService.setPresentationIsOpen(layoutContextDispatch, true);
+  }
 
   const horizontalPosition = cameraDock.position === 'contentLeft' || cameraDock.position === 'contentRight';
   // this is not exactly right yet
@@ -193,7 +196,7 @@ const currentUserEmoji = (currentUser) => (currentUser
   }
 );
 
-export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) => {
+export default withModalMounter(withTracker(() => {
   Users.find({ userId: Auth.userID, meetingId: Auth.meetingID }).observe({
     removed(userData) {
       // wait 3secs (before endMeeting), client will try to authenticate again
@@ -248,10 +251,6 @@ export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) 
     focusedCamera: meetingLayoutFocusedCamera,
     presentationVideoRate: meetingLayoutVideoRate,
   } = meetingLayoutObj;
-
-  if (currentUser && !currentUser.approved) {
-    baseControls.updateLoadingState(intl.formatMessage(intlMessages.waitingApprovalMessage));
-  }
 
   const UserInfo = UserInfos.find({
     meetingId: Auth.meetingID,
@@ -319,4 +318,4 @@ export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) 
     isModalOpen: !!getModal(),
     ignorePollNotifications: Session.get('ignorePollNotifications'),
   };
-})(AppContainer)));
+})(AppContainer));

@@ -244,7 +244,7 @@ const pollAnswerOptionDesc = 'button[data-test="pollAnswerOption"]';
 exports.firstPollAnswerDescOption = `${pollAnswerOptionDesc}>>nth=0`;
 exports.secondPollAnswerDescOption = `${pollAnswerOptionDesc}>>nth=1`;
 exports.submitAnswersMultiple = 'button[data-test="submitAnswersMultiple"]';
-exports.numberVotes = 'div[data-test="numberVotes"]';
+exports.numberVotes = 'div[data-test="numberOfVotes"]';
 exports.answer1 = 'div[data-test="numberOfVotes"]>>nth=0';
 exports.answer2 = 'div[data-test="numberOfVotes"]>>nth=1';
 exports.errorNoValueInput = 'div[data-test="errorNoValueInput"]';
@@ -254,6 +254,7 @@ const pollAnswersOption = 'div[data-test="optionsAnswers"]';
 exports.firstPollAnswerOptionBtn = `${pollAnswersOption}>>nth=0`;
 exports.secondPollAnswerOptionBtn = `${pollAnswersOption}>>nth=1`;
 exports.firstCheckboxInput = `${pollAnswersOption}`;
+exports.closePollingBtn = 'button[data-test="closePolling"]';
 // Presentation
 exports.currentSlideImg = 'img[id="slide-background-shape_image"]';
 exports.uploadPresentationFileName = 'uploadTest.png';
@@ -335,6 +336,7 @@ exports.connectionStatusItemUser = 'div[data-test="connectionStatusItemUser"]';
 exports.connectionStatusLinkToSettings = `${networkDataContainer} span[role="button"]`;
 exports.dataSavingWebcams = 'input[data-test="dataSavingWebcams"]';
 exports.connectionStatusOfflineUser = 'div[data-test="offlineUser"]';
+exports.videoUploadRateData = 'div[data-test="videoUploadRateData"]';
 exports.connectionDataContainer = networkDataContainer;
 exports.avatarsWrapperAvatar = 'div[data-test="avatarsWrapperAvatar"]';
 exports.guestPolicyLabel = 'li[data-test="guestPolicyLabel"]';
@@ -397,7 +399,19 @@ exports.startSharingWebcam = 'button[data-test="startSharingWebcam"]';
 exports.webcamConnecting = 'div[data-test="webcamConnecting"]';
 exports.webcamContainer = 'video[data-test="videoContainer"]';
 exports.webcamVideoItem = 'div[data-test="webcamVideoItem"]';
+exports.videoDropdownMenu = 'button[data-test="videoDropdownMenu"]';
+exports.advancedVideoSettingsBtn = 'li[data-test="advancedVideoSettingsButton"]';
+exports.mirrorWebcamBtn = 'li[data-test="mirrorWebcamBtn"]';
+exports.focusWebcamBtn = 'li[data-test="focusWebcamBtn"]';
+exports.pinWebcamBtn = 'li[data-test="pinWebcamBtn"]';
+exports.webcamFullscreenButton = 'button[data-test="webcamFullscreenButton"]';
+exports.selectDefaultBackground = 'button[data-test="selectDefaultBackground"]';
+exports.selectCustomBackground = 'button[data-test="selectCustomBackground"]';
+exports.removeCustomBackground = 'button[data-test="removeCustomBackground"]';
+exports.inputBackgroundButton = 'button[data-test="inputBackgroundButton"]';
+exports.noneBackgroundButton = 'button[data-test="noneBackgroundButton"]';
 
+exports.videoQualitySelector = 'select[id="setQuality"]';
 exports.webcamItemTalkingUser = 'div[data-test="webcamItemTalkingUser"]';
 exports.webcamSettingsModal = 'div[data-test="webcamSettingsModal"]';
 exports.dropdownWebcamButton = 'div[data-test="dropdownWebcamButton"]';
@@ -424,6 +438,20 @@ exports.multiUsersWhiteboardOff = 'button[data-test="turnMultiUsersWhiteboardOff
 exports.whiteboardViewBox = 'svg g[clip-path="url(#viewBox)"]';
 exports.changeWhiteboardAccess = 'li[data-test="changeWhiteboardAccess"]';
 exports.pencil = 'button[data-test="pencilTool"]';
+exports.resetZoomButton = 'button[data-test="resetZoomButton"]';
+exports.zoomInButton = 'button[data-test="zoomInBtn"]';
+exports.zoomOutButton = 'button[data-test="zoomOutBtn"]';
+exports.wbPan = 'button[data-test="panButton"]';
+exports.wbEraser = 'button[id="TD-PrimaryTools-Eraser"]';
+exports.wbArrowShape = 'button[id="TD-PrimaryTools-ArrowTopRight"]';
+exports.wbDelete = 'span[id="TD-Delete"]';
+exports.wbUndo = 'button[id="TD-TopPanel-Undo"]';
+exports.wbRedo = 'button[id="TD-TopPanel-Redo"]';
+exports.wbStyles = 'button[id="TD-Styles"]';
+exports.wbColorRed = 'button[id="TD-Styles-Color-Swatch-red"]';
+exports.wbFillDrawing = 'button[id="TD-Styles-Fill"]';
+exports.wbDashDotted = 'div[id="TD-Styles-Dash-dotted"]';
+exports.wbSizeLarge = 'div[id="TD-Styles-Dash-large"]';
 
 // About modal
 exports.showAboutModalButton = 'li[data-test="aboutModal"]';
@@ -442,6 +470,40 @@ exports.simpleModal = 'div[id="simpleModal"]';
 exports.sharedNotesBackground = 'div[data-test="notes"]';
 exports.whiteboardOptionsButton = 'button[data-test="whiteboardOptionsButton"]';
 
+// Layout management
+exports.layoutSettingsModalButton = 'li[data-test="layoutModal"]';
+exports.focusOnPresentation = 'button[data-test="presentationFocusLayout"]';
+exports.focusOnVideo = 'button[data-test="videoFocusLayout"]';
+exports.confirmButton = 'button[aria-label="Confirm"]';
+exports.cameraDock = 'video[data-test="videoContainer"]';
+
 // Font size
 exports.increaseFontSize = 'button[data-test="increaseFontSize"]';
-exports.descreaseFontSize = 'button[data-test="decreaseFontSize"]';
+exports.decreaseFontSize = 'button[data-test="decreaseFontSize"]';
+
+// Learning dashboard
+exports.learningDashboard = 'li[data-test="learningDashboard"]';
+exports.panels = 'div[role="tablist"]';
+exports.messageLearningDashboard = 'td[data-test="userTotalMessagesDashboard"]';
+exports.userOnlineTime = 'td[data-test="userOnlineTimeDashboard"]';
+exports.confirmRecording = 'div[id="simpleModal"] button:nth-child(1)';
+exports.pollTrueFalse = 'button[data-test="pollTrueFalse"]';
+exports.pollPanel = 'button[data-test="pollsPanelDashboard"]';
+exports.pollTrueFalseQuestion = 'div[role="rowgroup"] div:nth-child(3) div';
+exports.pollTrueFalseAnswer = 'div[role="cell"]:nth-child(3)';
+exports.pollABCDQuestion = 'div[role="rowgroup"] div:nth-child(4) div';
+exports.pollABCDAnswer = 'div[role="cell"]:nth-child(4)';
+exports.pollYesNoQuestion = 'div[role="rowgroup"] div:nth-child(5) div';
+exports.pollYesNoAnswer = 'div[role="cell"]:nth-child(5)';
+exports.pollUserResponseQuestion = 'div[role="rowgroup"] div:nth-child(6) div';
+exports.pollUserResponseAnswer = 'div[role="cell"]:nth-child(6)';
+exports.pollTotal = 'div[role="cell"]:nth-child(2)';
+exports.meetingStatusActiveDashboard = 'span[data-test="meetingStatusActiveDashboard"]';
+exports.meetingDurationTimeDashboard = 'p[data-test="meetingDurationTimeDashboard"]';
+exports.userNameDashboard = 'td[data-test="userLabelDashboard"] button';
+exports.userWebcamTimeDashboard = 'td[data-test="userWebcamTimeDashboard"]';
+exports.userRaiseHandDashboard = 'td[data-test="userRaiseHandDashboard"]';
+exports.userStatusDashboard = 'td[data-test="userStatusDashboard"]';
+exports.userActivityScoreDashboard = 'td[data-test="userActivityScoreDashboard"]';
+exports.activityScorePanelDashboard = 'button[data-test="activityScorePanelDashboard"]';
+exports.downloadSessionLearningDashboard = 'button[data-test="downloadSessionDataDashboard"]';

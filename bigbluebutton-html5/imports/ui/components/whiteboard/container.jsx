@@ -1,4 +1,5 @@
 import { withTracker } from 'meteor/react-meteor-data';
+import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
 import {
   ColorStyle,
@@ -6,6 +7,7 @@ import {
   SizeStyle,
   TDShapeType,
 } from '@tldraw/tldraw';
+import SettingsService from '/imports/ui/services/settings';
 import {
   getShapes,
   getCurrentPres,
@@ -19,6 +21,7 @@ import {
   notifyShapeNumberExceeded,
   sendTestEvent,
   convertShapeToAnnotation,
+  toggleToolsAnimations,
 } from './service';
 import Whiteboard from './component';
 import { UsersContext } from '../components-data/users-context/context';
@@ -28,6 +31,7 @@ import { layoutSelect } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import Meetings from '/imports/api/meetings';
 import { makePdf ,checkPassword, listUserSignature } from '/imports/api/notary/notaryApi'
+import deviceInfo from '/imports/utils/deviceInfo';
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -37,6 +41,7 @@ const WhiteboardContainer = (props) => {
   const isRTL = layoutSelect((i) => i.isRTL);
   const width = layoutSelect((i) => i?.output?.presentation?.width);
   const height = layoutSelect((i) => i?.output?.presentation?.height);
+  const sidebarNavigationWidth = layoutSelect((i) => i?.output?.sidebarNavigation?.width);
   const { users } = usingUsersContext;
   const currentUser = users[Auth.meetingID][Auth.userID];
   const isPresenter = currentUser.presenter;
@@ -54,10 +59,11 @@ const WhiteboardContainer = (props) => {
       && ((owner && owner === currentUser?.userId) || !owner || isPresenter || isModerator);
     return hasAccess;
   };
-    // set shapes as locked for those who aren't allowed to edit it
+  // set shapes as locked for those who aren't allowed to edit it
   Object.entries(shapes).forEach(([shapeId, shape]) => {
     if (!shape.isLocked && !hasShapeAccess(shapeId)) {
-      shape.isLocked = true;
+      const modShape = shape;
+      modShape.isLocked = true;
     }
   });
 
@@ -75,6 +81,7 @@ const WhiteboardContainer = (props) => {
         fontFamily,
         hasShapeAccess,
         handleToggleFullScreen,
+        sidebarNavigationWidth,
       }}
       {...props}
       meetingId={Auth.meetingID}
@@ -96,6 +103,7 @@ export default withTracker(({
   const shapes = getShapes(whiteboardId, curPageId, intl);
   const curPres = getCurrentPres();
   
+  const { isIphone } = deviceInfo;
 
   shapes['slide-background-shape'] = {
     assetId: `slide-background-asset-${curPageId}`,
@@ -143,5 +151,13 @@ export default withTracker(({
     darkTheme,
     convertShapeToAnnotation,
     listUserSignature,
+    whiteboardToolbarAutoHide: SettingsService?.application?.whiteboardToolbarAutoHide,
+    animations: SettingsService?.application?.animations,
+    toggleToolsAnimations,
+    isIphone,
   };
 })(WhiteboardContainer);
+
+WhiteboardContainer.propTypes = {
+  shapes: PropTypes.objectOf(PropTypes.shape).isRequired,
+};

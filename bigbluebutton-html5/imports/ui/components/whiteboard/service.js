@@ -15,12 +15,9 @@ import { UsersContext } from '../components-data/users-context/context';
 import Meetings from '/imports/api/meetings';
 import Presentations from '/imports/api/presentations';
 import axios from 'axios';
+import { getTextSize } from './utils';
 
 const Annotations = new Mongo.Collection(null);
-
-const UnsentAnnotations = new Mongo.Collection(null);
-const ANNOTATION_CONFIG = Meteor.settings.public.whiteboard.annotations;
-const DRAW_END = ANNOTATION_CONFIG.status.end;
 
 const intlMessages = defineMessages({
   notifyNotAllowedChange: {
@@ -35,37 +32,24 @@ const intlMessages = defineMessages({
 
 let annotationsStreamListener = null;
 
-export function addAnnotationToDiscardedList(annotation) {
-  if (!discardedList.includes(annotation)) discardedList.push(annotation);
-}
-
-const clearPreview = (annotation) => {
-  UnsentAnnotations.remove({ id: annotation });
-};
-
-const clearFakeAnnotations = () => {
-  UnsentAnnotations.remove({});
-  Annotations.remove({ id: /-fake/g });
-}
-
-function handleAddedAnnotation({
+async function handleAddedAnnotation({
   meetingId,
   whiteboardId,
   userId,
   annotation,
 }) {
   const isOwn = Auth.meetingID === meetingId && Auth.userID === userId;
-  const query = addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
+  //const query = addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
   console.log(annotation);
   console.log(query);
-  Annotations.upsert(query.selector, query.modifier);
+  const query = await addAnnotationQuery(meetingId, whiteboardId, userId, annotation, Annotations);
 
-  if (isOwn) {
-    UnsentAnnotations.remove({ id: `${annotation.id}` });
-  }
+  Annotations.upsert(query.selector, query.modifier);
 }
 
-function handleRemovedAnnotation({ meetingId, whiteboardId, userId, shapeId }) {
+function handleRemovedAnnotation({
+  meetingId, whiteboardId, userId, shapeId,
+}) {
   const query = { meetingId, whiteboardId };
 
   if (userId) {
@@ -75,17 +59,13 @@ function handleRemovedAnnotation({ meetingId, whiteboardId, userId, shapeId }) {
   if (shapeId) {
     query.id = shapeId;
   }
-  const annotationIsFake = Annotations.remove(query) === 0;
-  if (annotationIsFake) {
-    query.id = { $in: [shapeId, `${shapeId}-fake`] };
-    Annotations.remove(query);
-  }
+  Annotations.remove(query);
 }
 
 export function initAnnotationsStreamListener() {
   logger.info(
-    { logCode: "init_annotations_stream_listener" },
-    "initAnnotationsStreamListener called"
+    { logCode: 'init_annotations_stream_listener' },
+    'initAnnotationsStreamListener called',
   );
   /**
    * We create a promise to add the handlers after a ddp subscription stop.
@@ -94,14 +74,14 @@ export function initAnnotationsStreamListener() {
    */
   annotationsStreamListener = new Meteor.Streamer(
     `annotations-${Auth.meetingID}`,
-    { retransmit: false }
+    { retransmit: false },
   );
 
   const startStreamHandlersPromise = new Promise((resolve) => {
     const checkStreamHandlersInterval = setInterval(() => {
       const streamHandlersSize = Object.values(
         Meteor.StreamerCentral.instances[`annotations-${Auth.meetingID}`]
-          .handlers
+          .handlers,
       ).filter((el) => el !== undefined).length;
 
       if (!streamHandlersSize) {
@@ -112,14 +92,14 @@ export function initAnnotationsStreamListener() {
 
   startStreamHandlersPromise.then(() => {
     logger.debug(
-      { logCode: "annotations_stream_handler_attach" },
-      "Attaching handlers for annotations stream"
+      { logCode: 'annotations_stream_handler_attach' },
+      'Attaching handlers for annotations stream',
     );
 
-    annotationsStreamListener.on("removed", handleRemovedAnnotation);
+    annotationsStreamListener.on('removed', handleRemovedAnnotation);
 
-    annotationsStreamListener.on("added", ({ annotations }) => {
-      annotations.forEach((annotation) => handleAddedAnnotation(annotation));
+    annotationsStreamListener.on('added', ({ annotations }) => {
+      annotations.forEach(async (annotation) => handleAddedAnnotation(annotation));
     });
   });
 }
@@ -147,7 +127,7 @@ const proccessAnnotationsQueue = async () => {
 
   const annotations = annotationsQueue.splice(0, queueSize);
 
-  const isAnnotationSent = await makeCall("sendBulkAnnotations", annotations);
+  const isAnnotationSent = await makeCall('sendBulkAnnotations', annotations);
 
   if (!isAnnotationSent) {
     // undo splice
@@ -155,9 +135,9 @@ const proccessAnnotationsQueue = async () => {
     setTimeout(proccessAnnotationsQueue, annotationsRetryDelay);
   } else {
     // ask tiago
-    const delayPerc =
-      Math.min(annotationsMaxDelayQueueSize, queueSize) /
-      annotationsMaxDelayQueueSize;
+    const delayPerc = Math.min(
+      annotationsMaxDelayQueueSize, queueSize,
+    ) / annotationsMaxDelayQueueSize;
     const delayDelta = annotationsBufferTimeMax - annotationsBufferTimeMin;
     const delayTime = annotationsBufferTimeMin + delayDelta * delayPerc;
     setTimeout(proccessAnnotationsQueue, delayTime);
@@ -170,55 +150,14 @@ const sendAnnotation = (annotation) => {
   // reconnected. With this it will miss things
   if (!Meteor.status().connected) return;
 
-  const index = annotationsQueue.findIndex(ann => ann.id === annotation.id);
+  const index = annotationsQueue.findIndex((ann) => ann.id === annotation.id);
   if (index !== -1) {
     annotationsQueue[index] = annotation;
   } else {
     annotationsQueue.push(annotation);
   }
-  if (!annotationsSenderIsRunning)
-    setTimeout(proccessAnnotationsQueue, annotationsBufferTimeMin);
-};
-
-const sendLiveSyncPreviewAnnotation = (annotation) => {
-  // Prevent sending annotations while disconnected
-  if (!Meteor.status().connected) return;
-
-  annotationsQueue.push(annotation);
   if (!annotationsSenderIsRunning) setTimeout(proccessAnnotationsQueue, annotationsBufferTimeMin);
-
-  // skip optimistic for draw end since the smoothing is done in akka
-  if (annotation.status === DRAW_END) return;
-
-  const { position, ...relevantAnotation } = annotation;
-  const queryFake = addAnnotationQuery(
-    Auth.meetingID, annotation.wbId, Auth.userID,
-    {
-      ...relevantAnotation,
-      id: `${annotation.id}-fake`,
-      position: Number.MAX_SAFE_INTEGER,
-      annotationInfo: {
-        ...annotation.annotationInfo,
-        color: increaseBrightness(annotation.annotationInfo.color, 40),
-      },
-    },
-  );
-
-  Annotations.upsert(queryFake.selector, queryFake.modifier);
 };
-
-WhiteboardMultiUser.find({ meetingId: Auth.meetingID }).observeChanges({
-  changed: clearFakeAnnotations,
-});
-
-Users.find(
-  { userId: Auth.userID },
-  { fields: { presenter: 1 } }
-).observeChanges({
-  changed(id, { presenter }) {
-    if (presenter === false) clearFakeAnnotations();
-  },
-});
 
 const getMultiUser = (whiteboardId) => {
   const data = WhiteboardMultiUser.findOne(
@@ -226,7 +165,7 @@ const getMultiUser = (whiteboardId) => {
       meetingId: Auth.meetingID,
       whiteboardId,
     },
-    { fields: { multiUser: 1 } }
+    { fields: { multiUser: 1 } },
   );
 
   if (!data || !data.multiUser || !Array.isArray(data.multiUser)) return [];
@@ -255,14 +194,14 @@ const getMultiUserSize = (whiteboardId) => {
         { presenter: true },
       ],
     },
-    { fields: { userId: 1 } }
+    { fields: { userId: 1 } },
   ).fetch();
 
   return multiUserSize.length;
 };
 
 const getCurrentWhiteboardId = () => {
-  const podId = "DEFAULT_PRESENTATION_POD";
+  const podId = 'DEFAULT_PRESENTATION_POD';
   const currentPresentation = PresentationService.getCurrentPresentation(podId);
 
   if (!currentPresentation) return null;
@@ -273,7 +212,7 @@ const getCurrentWhiteboardId = () => {
       presentationId: currentPresentation.id,
       current: true,
     },
-    { fields: { id: 1 } }
+    { fields: { id: 1 } },
   );
 
   return currentSlide && currentSlide.id;
@@ -291,6 +230,22 @@ const hasMultiUserAccess = (whiteboardId, userId) => {
   return multiUser.includes(userId);
 };
 
+const addGlobalAccess = (whiteboardId) => {
+  makeCall('addGlobalAccess', whiteboardId);
+};
+
+const addIndividualAccess = (whiteboardId, userId) => {
+  makeCall('addIndividualAccess', whiteboardId, userId);
+};
+
+const removeGlobalAccess = (whiteboardId) => {
+  makeCall('removeGlobalAccess', whiteboardId);
+};
+
+const removeIndividualAccess = (whiteboardId, userId) => {
+  makeCall('removeIndividualAccess', whiteboardId, userId);
+};
+
 const changeWhiteboardAccess = (userId, access) => {
   const whiteboardId = getCurrentWhiteboardId();
 
@@ -301,22 +256,6 @@ const changeWhiteboardAccess = (userId, access) => {
   } else {
     removeIndividualAccess(whiteboardId, userId);
   }
-};
-
-const addGlobalAccess = (whiteboardId) => {
-  makeCall("addGlobalAccess", whiteboardId);
-};
-
-const addIndividualAccess = (whiteboardId, userId) => {
-  makeCall("addIndividualAccess", whiteboardId, userId);
-};
-
-const removeGlobalAccess = (whiteboardId) => {
-  makeCall("removeGlobalAccess", whiteboardId);
-};
-
-const removeIndividualAccess = (whiteboardId, userId) => {
-  makeCall("removeIndividualAccess", whiteboardId, userId);
 };
 
 const sendTestEvent = () =>{
@@ -336,50 +275,70 @@ const persistShape = (shape, whiteboardId) => {
   sendAnnotation(annotation);
 };
 
-const removeShapes = (shapes, whiteboardId) => makeCall("deleteAnnotations", shapes, whiteboardId);
+const removeShapes = (shapes, whiteboardId) => makeCall('deleteAnnotations', shapes, whiteboardId);
 
 const changeCurrentSlide = (s) => {
-  makeCall("changeCurrentSlide", s);
-}
+  makeCall('changeCurrentSlide', s);
+};
 
 const getShapes = (whiteboardId, curPageId, intl) => {
-  const annotations =  Annotations.find(
+  const annotations = Annotations.find(
     {
       whiteboardId,
     },
     {
-      fields: { annotationInfo: 1, userId: 1, },
+      fields: { annotationInfo: 1, userId: 1 },
     },
   ).fetch();
 
-  let result = {};
+  const result = {};
 
   annotations.forEach((annotation) => {
     if (annotation.annotationInfo.questionType) {
+      const modAnnotation = annotation;
       // poll result, convert it to text and create tldraw shape
-      annotation.annotationInfo.answers = annotation.annotationInfo.answers.reduce(caseInsensitiveReducer, []);
-      const pollResult = PollService.getPollResultString(annotation.annotationInfo, intl)
-        .split('<br/>').join('\n').replace( /(<([^>]+)>)/ig, '');
-      annotation.annotationInfo = {
-        childIndex: 2,
+      modAnnotation.annotationInfo.answers = annotation.annotationInfo.answers.reduce(
+        caseInsensitiveReducer, [],
+      );
+      let pollResult = PollService.getPollResultString(annotation.annotationInfo, intl)
+        .split('<br/>').join('\n').replace(/(<([^>]+)>)/ig, '');
+
+      const lines = pollResult.split('\n');
+      const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '').length;
+
+      // add empty spaces before first | in each of the lines to make them all the same length
+      pollResult = lines.map((line) => {
+        if (!line.includes('|') || line.length === longestLine) return line;
+
+        const splitLine = line.split(' |');
+        const spaces = ' '.repeat(longestLine - line.length);
+        return `${splitLine[0]} ${spaces}|${splitLine[1]}`;
+      }).join('\n');
+
+      const style = {
+        color: 'white',
+        dash: 'solid',
+        font: 'mono',
+        isFilled: true,
+        size: 'small',
+        scale: 1,
+      };
+
+      const textSize = getTextSize(pollResult, style, padding = 20);
+
+      modAnnotation.annotationInfo = {
+        childIndex: 0,
         id: annotation.annotationInfo.id,
         name: `poll-result-${annotation.annotationInfo.id}`,
-        type: "text",
-        text: pollResult,
+        type: 'rectangle',
+        label: pollResult,
+        labelPoint: [0.5, 0.5],
         parentId: `${curPageId}`,
         point: [0, 0],
-        rotation: 0,
-        style: {
-          isFilled: false,
-          size: "medium",
-          scale: 1,
-          color: "black",
-          textAlign: "start",
-          font: "script",
-          dash: "draw"
-        },
-      }
-      annotation.annotationInfo.questionType = false;
+        size: textSize,
+        style,
+      };
+      modAnnotation.annotationInfo.questionType = false;
     }
     result[annotation.annotationInfo.id] = annotation.annotationInfo;
   });
@@ -389,9 +348,9 @@ const getShapes = (whiteboardId, curPageId, intl) => {
 };
 
 const getCurrentPres = () => {
-  const podId = "DEFAULT_PRESENTATION_POD";
-  return  PresentationService.getCurrentPresentation(podId);
-}
+  const podId = 'DEFAULT_PRESENTATION_POD';
+  return PresentationService.getCurrentPresentation(podId);
+};
 
 const initDefaultPages = (count = 1) => {
   const pages = {};
@@ -412,7 +371,7 @@ const initDefaultPages = (count = 1) => {
         zoom: 1,
       },
     };
-    i++;
+    i += 1;
   }
   return { pages, pageStates };
 };
@@ -539,14 +498,24 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
     return err;
   }
 }
+const toggleToolsAnimations = (activeAnim, anim, time) => {
+  const tdTools = document.querySelector("#TD-Tools");
+  const topToolbar = document.getElementById("TD-Styles")?.parentElement;
+  if (tdTools && topToolbar) {
+    tdTools.classList.remove(activeAnim);
+    topToolbar.classList.remove(activeAnim);
+    topToolbar.style.transition = `opacity ${time} ease-in-out`;
+    tdTools.style.transition = `opacity ${time} ease-in-out`;
+    tdTools?.classList?.add(anim);
+    topToolbar?.classList?.add(anim);
+  }
+}
+
 
 export {
   initDefaultPages,
   Annotations,
-  UnsentAnnotations,
   sendAnnotation,
-  sendLiveSyncPreviewAnnotation,
-  clearPreview,
   getMultiUser,
   getMultiUserSize,
   getCurrentWhiteboardId,
@@ -562,9 +531,9 @@ export {
   getCurrentPres,
   removeShapes,
   changeCurrentSlide,
-  clearFakeAnnotations,
   notifyNotAllowedChange,
   notifyShapeNumberExceeded,
   sendTestEvent, 
   convertShapeToAnnotation, 
+  toggleToolsAnimations,
 };
