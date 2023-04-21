@@ -96,79 +96,22 @@ const Avatar = styled.div`
   position: relative;
   height: 2.25rem;
   width: 2.25rem;
-  border-radius: 50%;
   text-align: center;
   font-size: .85rem;
   border: 2px solid transparent;
   user-select: none;
+  
 
   ${({ animations }) => animations && `
     transition: .3s ease-in-out;
   `}
 
-  &:after,
-  &:before {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
-    padding-top: .5rem;
-    padding-right: 0;
-    padding-left: 0;
-    padding-bottom: 0;
-    color: inherit;
-    top: auto;
-    left: auto;
-    bottom: ${userIndicatorsOffset};
-    right: ${userIndicatorsOffset};
-    border: 1.5px solid ${userListBg};
-    border-radius: 50%;
-    background-color: ${colorSuccess};
-    color: ${colorWhite};
-    opacity: 0;
-    font-family: 'bbb-icons';
-    font-size: .65rem;
-    line-height: 0;
-    text-align: center;
-    vertical-align: middle;
-    letter-spacing: -.65rem;
-    z-index: 1;
-
-    [dir="rtl"] & {
-      left: ${userIndicatorsOffset};
-      right: auto;
-      padding-right: .65rem;
-      padding-left: 0;
-    }
-
-    ${({ animations }) => animations && `
-      transition: .3s ease-in-out;
-    `}
-  }
 
   ${({ moderator }) => moderator && `
-    border-radius: 5px;
+    border-radius: 20px;
   `}
 
-  ${({ presenter }) => presenter && `
-    &:before {
-      content: "\\00a0\\e90b\\00a0";
-      padding: ${mdPaddingY} !important;
-      opacity: 1;
-      top: ${userIndicatorsOffset};
-      left: ${userIndicatorsOffset};
-      bottom: auto;
-      right: auto;
-      border-radius: 5px;
-      background-color: ${colorPrimary};
-
-      [dir="rtl"] & {
-        left: auto;
-        right: ${userIndicatorsOffset};
-        letter-spacing: -.33rem;
-      }
-    }
-  `}
+  
 
   ${({
     presenter, isChrome, isFirefox, isEdge,

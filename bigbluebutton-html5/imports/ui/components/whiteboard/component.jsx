@@ -1,7 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import { TldrawApp, Tldraw } from '@tldraw/tldraw';
+import { TldrawApp, Tldraw, TDShapeType, TDToolType  } from '@tldraw/tldraw';
 import SlideCalcUtil, { HUNDRED_PERCENT } from '/imports/utils/slideCalcUtils';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Utils } from '@tldraw/core';
@@ -19,8 +19,7 @@ import PanToolInjector from './pan-tool-injector/component';
 import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
 } from './utils';
-
-
+import { notify } from '/imports/ui/services/notification';
 
 const SMALL_HEIGHT = 435;
 const SMALLEST_HEIGHT = 363;
@@ -1143,7 +1142,7 @@ export default function Whiteboard(props) {
       onMount={onMount}
       // disable the ability to drag and drop files onto the whiteboard
       // until we handle saving of assets in akka.
-      disableAssets
+      disableAssets={false}
       // Disable automatic focus. Users were losing focus on shared notes
       // and chat on presentation mount.
       autofocus={false}
@@ -1257,12 +1256,12 @@ export default function Whiteboard(props) {
               signPassword)
               .then ((res)=>{
                 console.log(res);
-                notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
+                //notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
                 setShowLoading(false);
               })
               .catch( (err)=>{
                 console.log(err);
-                notify('error', 'info', 'warning');
+                //notify('error', 'info', 'warning');
                 setShowLoading(false);
               });
 
