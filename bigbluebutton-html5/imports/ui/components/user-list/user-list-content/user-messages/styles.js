@@ -15,6 +15,17 @@ const MessagesTitle = styled(Styled.SmallTitle)`
   margin: 0;
 `;
 
+const MessagesTitleBig = styled(Styled.SmallTitle)`
+  flex: 1;
+  margin: 0;
+  font-size : 1.4rem;
+  padding-bottom: 8px;
+  padding-top: 12px;
+  margin-right : 5px;
+  border-bottom: 3px solid ;
+  border-color: #de7073;
+`;
+
 const ScrollableList = styled(StyledContent.ScrollableList)``;
 
 const List = styled(StyledContent.List)``;
@@ -61,6 +72,7 @@ export default {
   Container,
   Separator,
   MessagesTitle,
+  MessagesTitleBig,
   ScrollableList,
   List,
   ListTransition,

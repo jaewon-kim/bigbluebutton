@@ -18,9 +18,9 @@ const UserList = styled(FlexColumn)`
 `;
 
 const SmallTitle = styled.h2`
-  font-size: 0.85rem;
+  font-family: 'Josefin Sans';
+  font-size: 1.2rem;
   font-weight: 600;
-  text-transform: uppercase;
   padding: 0 ${smPaddingX};
   color: ${colorGray};
   flex: 1;

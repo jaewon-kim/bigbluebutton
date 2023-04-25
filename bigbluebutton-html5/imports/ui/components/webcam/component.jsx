@@ -42,6 +42,11 @@ const WebcamComponent = ({
       }
     };
 
+    layoutContextDispatch({
+      type: ACTIONS.SET_CAMERA_DOCK_POSITION,
+      value: CAMERADOCK_POSITION.CONTENT_RIGHT
+    });
+
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {

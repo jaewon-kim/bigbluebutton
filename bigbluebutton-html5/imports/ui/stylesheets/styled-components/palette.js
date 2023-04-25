@@ -27,7 +27,7 @@ const colorMutedBackground = 'var(--color-muted-background, #F3F6F9)';
 const colorBackground = `var(--color-background, ${colorGrayDark})`;
 const colorOverlay = 'var(--color-overlay, rgba(6, 23, 42, 0.75))';
 
-const userListBg = `var(--user-list-bg, ${colorOffWhite})`;
+const userListBg = `var(--user-list-bg, ${colorWhite})`;
 const userListText = `var(--user-list-text, ${colorGray})`;
 const unreadMessagesBg = `var(--unread-messages-bg, ${colorDanger})`;
 const colorGrayLabel = `var(--color-gray-label, ${colorGray})`;

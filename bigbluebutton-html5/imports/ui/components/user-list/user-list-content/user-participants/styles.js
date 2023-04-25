@@ -22,15 +22,8 @@ const UserListColumn = styled(FlexColumn)`
 `;
 
 const VirtualizedScrollableList = styled(ScrollboxVertical)`
-  background: linear-gradient(${userListBg} 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), ${userListBg} 70%) 0 100%,
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
 
-  > div {
-    outline: none;
-  }
+
 
   &:hover {
     /* Visible in Windows high-contrast themes */
@@ -63,13 +56,7 @@ const VirtualizedScrollableList = styled(ScrollboxVertical)`
 `;
 
 const VirtualizedList = styled(VirtualizedScrollboxVertical)`
-  background: linear-gradient(#f3f6f9 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), #f3f6f9 70%) 0 100%,
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-
-  outline: none;
+  
 `;
 
 export default {

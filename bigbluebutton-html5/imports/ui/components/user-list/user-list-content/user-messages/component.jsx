@@ -108,10 +108,18 @@ class UserMessages extends PureComponent {
     return (
       <Styled.Messages>
         <Styled.Container>
+          
+            
+          <Styled.MessagesTitleBig data-test="messageTitle">
+            Component
+          </Styled.MessagesTitleBig>
+          
+        </Styled.Container>
+        <Styled.Container>
           {
             !compact ? (
               <Styled.MessagesTitle data-test="messageTitle">
-                {intl.formatMessage(intlMessages.messagesTitle)}
+                Chatting
               </Styled.MessagesTitle>
             ) : (
               <Styled.Separator />

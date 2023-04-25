@@ -99,7 +99,11 @@ const ChatContainer = (props) => {
       content: [{
         id: sysMessagesIds.welcomeId,
         // text: welcomeProp.welcomeMsg,
-        text: 'Welcome to session for notarize', //for Notary 
+        text: 'Welcome to to 901er Notary Room!<br/><br/> \
+        For help on using tutorial video. <br/><br/> \
+        To join the audio bridge click the speaker button. Use a headset to avoid causing background noise for others <br/><br/> \
+        Please call us in case of problems.<br/>\
+        help desk: (000)000-0000', //for Notary 
         time: loginTime,
       }],
       key: sysMessagesIds.welcomeId,

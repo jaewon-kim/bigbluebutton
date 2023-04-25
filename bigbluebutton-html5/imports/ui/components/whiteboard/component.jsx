@@ -8,6 +8,8 @@ import { Utils } from '@tldraw/core';
 import Cursors from './cursors/container';
 import Settings from '/imports/ui/services/settings';
 import logger from '/imports/startup/client/logger';
+import BBBMenu from '/imports/ui/components/common/menu/component';
+import TooltipContainer from '/imports/ui/components/common/tooltip/container';
 import KEY_CODES from '/imports/utils/keyCodes';
 import {
   presentationMenuHeight,
@@ -16,6 +18,7 @@ import {
 } from '/imports/ui/stylesheets/styled-components/general';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
+
 import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
 } from './utils';
@@ -113,6 +116,7 @@ export default function Whiteboard(props) {
   const [userSignatureList, setUserSignatureList] = React.useState(null);
   const [showSignatureList, setShowSignatureList] = React.useState(false);
   const [selectedSignature, setSelectedSignature] = React.useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -1273,99 +1277,7 @@ export default function Whiteboard(props) {
     </div>
   );
 
-  const customFunctions = (
-    <div
-      style={{
-        position: 'absolute',
-        display: 'flex',
-        gap: '10px',
-        zIndex: 10000,
-        bottom: '10px',
-        left: '10px',
-      }}>
-      <button
-        onClick={() =>{
-          console.log("button sign");
-          tldrawAPI?.selectTool(TDShapeType.Draw);
-
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        SIGN(draw)
-      </button>
-      <button
-        onClick={() =>{
-          console.log("button text");
-          tldrawAPI?.selectTool(TDShapeType.Text);
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        INPUT TEXT
-      </button>
-      <button
-        onClick={() =>{
-          onSealing();
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        SEAL
-      </button>
-      <button
-        onClick={() =>{
-          setCustomTool("userSignature");
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        SIGN IMG
-      </button>
-      <button
-        onClick={() =>{
-          setShowingSelection(true);
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        Cert Signing
-      </button> 
-      <button
-        onClick={() =>{
-          setShowSignatureList(true);
-        }}
-        style={{
-          border: '1px solid #333',
-          background:'silver',
-          fontSize: '1rem',
-          padding: '0.3em 0.8em',
-          borderRadius: '0.15em',
-        }}>
-        Select User Signature
-      </button>      
-    </div>
-  );
+  
 
   const size = ((height < SMALL_HEIGHT) || (width < SMALL_WIDTH))
     ? TOOLBAR_SMALL : TOOLBAR_LARGE;
@@ -1390,9 +1302,102 @@ export default function Whiteboard(props) {
   };
 
   const menuOffset = menuOffsetValues[isRTL][isIphone];
+  const options = [];
+  options.push(
+    {
+      key: 'list-item-draw',
+      dataTest: 'toolVisibility',
+      label:'Pencil Draw',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("button sign");
+        tldrawAPI?.selectTool(TDShapeType.Draw);
+      },
+    },
+    {
+      key: 'list-item-sealing',
+      dataTest: 'toolVisibility',
+      label:'Input Text',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Input Text");
+        tldrawAPI?.selectTool(TDShapeType.Text);
+      },
+    },
+    {
+      key: 'list-item-sealing',
+      dataTest: 'toolVisibility',
+      label:'Insert Sealing',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Insert Sealing");
+        onSealing();
+      },
+    },
+    {
+      key: 'list-item-user-signature',
+      dataTest: 'toolVisibility',
+      label:'Insert Selected User Signature',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Insert Selected User Signature");
+        setCustomTool("userSignature");
+      },
+    },
+    {
+      key: 'list-item-select-user-signature',
+      dataTest: 'toolVisibility',
+      label:'Select User Signature',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Select User Signature");
+        setShowSignatureList(true);
+      },
+    },
+    {
+      key: 'list-item-certification-make-pdf',
+      dataTest: 'toolVisibility',
+      label:'Request Make Document',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Request Make Document");
+        setShowingSelection(true);
+      },
+    },
+  );
 
   return (
     <div key={`animations=-${animations}`}>
+      <Styled.Left id='NotaryOptionMenu'>
+        <BBBMenu
+          trigger={(
+            
+            <Styled.DropdownButton
+              state={isDropdownOpen ? 'open' : 'closed'}
+              aria-label='Notary Menu'
+              data-test="notaryOptionsButton"
+              onClick={() => {
+                setIsDropdownOpen((isOpen) => !isOpen);
+              }}
+            >
+              For Notary
+              <Styled.ButtonIcon iconName="more" />
+            </Styled.DropdownButton>
+          
+          )}
+          opts={{
+            id: 'default-dropdown-menu',
+            keepMounted: true,
+            transitionDuration: 0,
+            elevation: 3,
+            getContentAnchorEl: null,
+            fullwidth: 'true',
+            anchorOrigin: { vertical: 'top', horizontal: isRTL ? 'right' : 'left' },
+            transformOrigin: { vertical: 'bottom', horizontal: isRTL ? 'right' : 'left' },
+          }}
+          actions={options}
+        />
+      </Styled.Left>
       <Cursors
         tldrawAPI={tldrawAPI}
         currentUser={currentUser}
@@ -1419,7 +1424,6 @@ export default function Whiteboard(props) {
             isToolbarVisible,
           }}
         />
-        {customFunctions}
         {showSignatureList && selectUserSignature}
         {isShowingSelection && signingCert}
         

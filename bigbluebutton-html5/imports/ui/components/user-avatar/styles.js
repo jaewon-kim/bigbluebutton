@@ -100,6 +100,7 @@ const Avatar = styled.div`
   font-size: .85rem;
   border: 2px solid transparent;
   user-select: none;
+  border-radius: 20px;
   
 
   ${({ animations }) => animations && `
@@ -121,27 +122,7 @@ const Avatar = styled.div`
     }
   `}
 
-  ${({ whiteboardAccess }) => whiteboardAccess && `
-    &:before {
-      content: "\\00a0\\e925\\00a0";
-      padding: ${mdPaddingY} !important;
-      border-radius: 50% !important;
-      opacity: 1;
-      top: ${userIndicatorsOffset};
-      left: ${userIndicatorsOffset};
-      bottom: auto;
-      right: auto;
-      border-radius: 5px;
-      background-color: ${colorPrimary};
-
-      [dir="rtl"] & {
-        left: auto;
-        right: ${userIndicatorsOffset};
-        letter-spacing: -.33rem;
-        transform: scale(-1, 1);
-      }
-    }
-  `}
+  
 
   ${({
     whiteboardAccess, isChrome, isFirefox, isEdge,
@@ -151,61 +132,7 @@ const Avatar = styled.div`
     }
   `}
 
-  ${({ voice }) => voice && `
-    &:after {
-      content: "\\00a0\\e931\\00a0";
-      background-color: ${colorSuccess};
-      top: 1.375rem;
-      left: 1.375rem;
-      right: auto;
 
-      [dir="rtl"] & {
-        left: auto;
-        right: 1.375rem;
-      }
-      opacity: 1;
-      width: 1.2rem;
-      height: 1.2rem;
-    }
-  `}
-
-  ${({ muted }) => muted && `
-    &:after {
-      content: "\\00a0\\e932\\00a0";
-      background-color: ${colorDanger};
-      opacity: 1;
-      width: 1.2rem;
-      height: 1.2rem;
-    }
-  `}
-
-  ${({ listenOnly }) => listenOnly && `
-    &:after {
-      content: "\\00a0\\e90c\\00a0";
-      opacity: 1;
-      width: 1.2rem;
-      height: 1.2rem;
-    }
-  `}
-
-  ${({ noVoice }) => noVoice && `
-    &:after {
-      content: "";
-      background-color: ${colorOffWhite};
-      top: 1.375rem;
-      left: 1.375rem;
-      right: auto;
-
-      [dir="rtl"] & {
-        left: auto;
-        right: 1.375rem;
-      }
-
-      opacity: 1;
-      width: 1.2rem;
-      height: 1.2rem;
-    }
-  `}
 `;
 
 const Skeleton = styled.div`

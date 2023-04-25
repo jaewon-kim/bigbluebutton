@@ -29,6 +29,9 @@ const Form = styled.form`
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
+  background:white;
+  border-radius:10px;
+  padding: 10px;
 `;
 
 const Input = styled(TextareaAutosize)`
@@ -46,8 +49,8 @@ const Input = styled(TextareaAutosize)`
   line-height: 1;
   min-height: 2.5rem;
   max-height: 10rem;
-  border: 1px solid ${colorGrayLighter};
-  box-shadow: 0 0 0 1px ${colorGrayLighter};
+  border: 0px solid ${colorGrayLighter};
+  box-shadow: 0 0 0 0px ${colorGrayLighter};
 
   &:disabled,
   &[disabled] {
@@ -58,7 +61,7 @@ const Input = styled(TextareaAutosize)`
 
   &:focus {
     border-radius: ${borderSize};
-    box-shadow: 0 0 0 ${borderSize} ${colorBlueLight}, inset 0 0 0 1px ${colorPrimary};
+    //box-shadow: 0 0 0 ${borderSize} ${colorBlueLight}, inset 0 0 0 1px ${colorPrimary};
   }
 
   &:hover,

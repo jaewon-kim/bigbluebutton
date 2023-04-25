@@ -37,13 +37,7 @@ const Container = styled.div`
 `;
 
 const ScrollableList = styled(ScrollboxVertical)`
-  background: linear-gradient(${userListBg} 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), ${userListBg} 70%) 0 100%,
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-
-  outline: none;
+ 
   
   &:hover {
     /* Visible in Windows high-contrast themes */
@@ -85,7 +79,7 @@ const ListItem = styled(Styled.ListItem)`
   text-decoration: none;
   width: 100%;
   color: ${colorGrayDark};
-  background-color: ${colorOffWhite};
+  background-color: ${colorWhite};
 
   [dir="rtl"]  & {
     padding-right: ${lgPaddingY};

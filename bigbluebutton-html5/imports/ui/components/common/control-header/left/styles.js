@@ -12,6 +12,7 @@ const HideButton = styled(Button)`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background-color:#f2f7fa;
 
   & > i,
   & > i::before {

@@ -199,7 +199,8 @@ class NavBar extends Component {
               position: 'absolute',
               top: style.top,
               left: style.left,
-              height: style.height,
+              // height: style.height,
+              height: '60px',
               width: style.width,
               background :'#f3f7fa'
             }
@@ -252,9 +253,9 @@ class NavBar extends Component {
             <SettingsDropdownContainer amIModerator={amIModerator} />
           </Styled.Right>
         </Styled.Top>
-        <Styled.Bottom>
+        {false ? <Styled.Bottom>
           <TalkingIndicatorContainer amIModerator={amIModerator} />
-        </Styled.Bottom>
+        </Styled.Bottom>:null }
       </Styled.Navbar>
     );
   }

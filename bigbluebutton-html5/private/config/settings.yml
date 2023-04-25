@@ -102,7 +102,7 @@ public:
         # - zh-CN
         # If true, automatically uses the below locale field content as transcription language
         # and the language selector in audio modal won't show up!
-        forceLocale: false
+        forceLocale: en-US
         # If true, the default selected value for language selector in audio modal
         # is the below locale field content
         defaultSelectLocale: true
@@ -188,7 +188,7 @@ public:
         # Users can individually set their preferred locale through Settings,
         # but on first page load overrideLocale will trump the browser's
         # preferred locale
-        overrideLocale: null
+        overrideLocale: en
         #Audio constraints for microphone. Use this to control browser's
         #filters, such as AGC (Auto Gain Control) , Echo Cancellation,
         #Noise Supression, etc.

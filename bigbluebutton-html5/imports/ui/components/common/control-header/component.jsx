@@ -22,14 +22,27 @@ const Header = ({
   );
 
   return (
-    <Styled.Header data-test={dataTest ? dataTest : ''} {...rest}>
-      {leftButtonProps ? <Left {...leftButtonProps} /> : <div />}
-      {customRightButton
-        ? renderCustomRightButton()
-        : rightButtonProps
-          ? renderCloseButton()
-          : null}
-    </Styled.Header>
+    <>
+      <Styled.Header data-test={dataTest ? dataTest : ''} {...rest}>
+        {leftButtonProps ? <Left {...leftButtonProps} /> : <div />}
+        {customRightButton
+          ? renderCustomRightButton()
+          : rightButtonProps
+            ? renderCloseButton()
+            : null}
+        
+      </Styled.Header>
+      <div style={{
+        fontFamily:'Josefin Sans',
+        fontSize:'2rem',
+        fontWeight:600,
+        color:'#de7073',
+        marginTop:'-14px',
+        paddingBottom:'10px'
+      }}>
+        Chatting
+      </div>
+    </>
   );
 }
 

@@ -4,14 +4,9 @@ import ReactModal from 'react-modal';
 
 const ScrollboxVertical = styled.div`
   overflow-y: auto;
-  background: linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-
+  
   background-repeat: no-repeat;
-  background-color: transparent;
+  background-color: white;
   background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
   background-attachment: local, local, scroll, scroll;
 
@@ -43,11 +38,6 @@ const ScrollboxVertical = styled.div`
 
 const VirtualizedScrollboxVertical = styled(List)`
   overflow-y: auto;
-  background: linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
 
   background-repeat: no-repeat;
   background-color: transparent;

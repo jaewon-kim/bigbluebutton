@@ -11,6 +11,7 @@ import {
 import {
   colorGrayDark,
   colorOffWhite,
+  colorWhite,
   listItemBgHover,
   colorGrayLight,
 } from '/imports/ui/stylesheets/styled-components/palette';
@@ -67,7 +68,7 @@ const ChatListItem = styled(Styled.ListItem)`
   flex-grow: 1;
   line-height: 2;
   color: ${colorGrayDark};
-  background-color: ${colorOffWhite};
+  background-color: ${colorWhite};
   padding-top: ${lgPaddingY};
   padding-bottom: ${lgPaddingY};
   padding-left: ${lgPaddingY};

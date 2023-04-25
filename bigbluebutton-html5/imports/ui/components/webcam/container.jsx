@@ -26,13 +26,15 @@ const WebcamContainer = ({
   const presentation = layoutSelectOutput((i) => i.presentation);
   const cameraDock = layoutSelectOutput((i) => i.cameraDock);
   const layoutContextDispatch = layoutDispatch();
-
+  
   const { cameraOptimalGridSize } = cameraDockInput;
   const { display: displayPresentation } = presentation;
 
   const usingUsersContext = useContext(UsersContext);
   const { users } = usingUsersContext;
   const currentUser = users[Auth.meetingID][Auth.userID];
+
+  
 
   return !audioModalIsOpen
     && usersVideo.length > 0

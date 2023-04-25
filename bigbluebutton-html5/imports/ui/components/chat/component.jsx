@@ -74,7 +74,7 @@ const Chat = (props) => {
           accessKey: chatID !== 'public' ? HIDE_CHAT_AK : null,
           'aria-label': intl.formatMessage(intlMessages.hideChatLabel, { 0: title }),
           'data-test': isPublicChat ? 'hidePublicChat' : 'hidePrivateChat',
-          label: title,
+          label: '',
           onClick: () => {
             layoutContextDispatch({
               type: ACTIONS.SET_SIDEBAR_CONTENT_IS_OPEN,

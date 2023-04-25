@@ -7,7 +7,7 @@ import { smallOnly } from '/imports/ui/stylesheets/styled-components/breakpoints
 import { mdPaddingX } from '/imports/ui/stylesheets/styled-components/general';
 
 const Chat = styled.div`
-  background-color: ${colorWhite};
+  background-color: #f2f7fa;
   padding: ${mdPaddingX};
 
   display: flex;
