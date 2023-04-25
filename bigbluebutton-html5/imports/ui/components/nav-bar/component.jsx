@@ -202,7 +202,7 @@ class NavBar extends Component {
               // height: style.height,
               height: '60px',
               width: style.width,
-              background :'#f3f7fa'
+              background :'#ffffff'
             }
             : {
               position: 'relative',
