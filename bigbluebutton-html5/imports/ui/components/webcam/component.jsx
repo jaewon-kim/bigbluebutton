@@ -41,17 +41,13 @@ const WebcamComponent = ({
         document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
       }
     };
-
-    layoutContextDispatch({
-      type: ACTIONS.SET_CAMERA_DOCK_POSITION,
-      value: CAMERADOCK_POSITION.CONTENT_RIGHT
-    });
-
     document.addEventListener('visibilitychange', handleVisibility);
-
+    
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
+
+    
   }, []);
 
   useEffect(() => {
@@ -62,6 +58,7 @@ const WebcamComponent = ({
     const newCameraMaxWidth = (isPresenter && cameraDock.presenterMaxWidth) ? cameraDock.presenterMaxWidth : cameraDock.maxWidth;
     setCameraMaxWidth(newCameraMaxWidth);
 
+    
     if (isCameraLeftOrRight && cameraDock.width > newCameraMaxWidth) {
       layoutContextDispatch(
         {

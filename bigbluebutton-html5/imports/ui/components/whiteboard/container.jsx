@@ -27,7 +27,7 @@ import Whiteboard from './component';
 import { UsersContext } from '../components-data/users-context/context';
 import Auth from '/imports/ui/services/auth';
 import PresentationToolbarService from '../presentation/presentation-toolbar/service';
-import { layoutSelect } from '../layout/context';
+import { layoutSelect, layoutDispatch } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import deviceInfo from '/imports/utils/deviceInfo';
 import Meetings from '/imports/api/meetings';
@@ -49,7 +49,7 @@ const WhiteboardContainer = (props) => {
   const { maxStickyNoteLength, maxNumberOfAnnotations } = WHITEBOARD_CONFIG;
   const fontFamily = WHITEBOARD_CONFIG.styles.text.family;
   const handleToggleFullScreen = (ref) => FullscreenService.toggleFullScreen(ref);
-  
+  const layoutContextDispatch = layoutDispatch();
 
   const { shapes } = props;
   const hasShapeAccess = (id) => {
@@ -82,6 +82,7 @@ const WhiteboardContainer = (props) => {
         hasShapeAccess,
         handleToggleFullScreen,
         sidebarNavigationWidth,
+        layoutContextDispatch,
       }}
       {...props}
       meetingId={Auth.meetingID}

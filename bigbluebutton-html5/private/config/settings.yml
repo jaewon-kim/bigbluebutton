@@ -265,7 +265,8 @@ public:
     enabled: true
   kurento:
     #wsUrl: HOST
-    wsUrl: wss://bbb.project-asylum.info/bbb-webrtc-sfu
+    #wsUrl: wss://bbb.project-asylum.info/bbb-webrtc-sfu
+    wsUrl: wss://bbb.connexo.co.kr/bbb-webrtc-sfu
     cameraWsOptions:
       # Valid for video-provider. Time (ms) before its WS connection times out
       # and tries to reconnect.
@@ -342,46 +343,46 @@ public:
       #   # Examples:
       #   width: requested width of the camera stream
       #   frameRate: requested framerate
-      - id: low-u30
-        name: low-u30
-        bitrate: 30
-        hidden: true
-      - id: low-u25
-        name: low-u25
-        bitrate: 40
-        hidden: true
-      - id: low-u20
-        name: low-u20
-        bitrate: 50
-        hidden: true
-      - id: low-u15
-        name: low-u15
-        bitrate: 70
-        hidden: true
-      - id: low-u12
-        name: low-u12
-        bitrate: 90
-        hidden: true
-      - id: low-u8
-        name: low-u8
-        bitrate: 100
-        hidden: true
-      - id: low
-        name: Low
-        default: false
-        bitrate: 100
-      - id: medium
-        name: Medium
-        default: true
-        bitrate: 200
-      - id: high
-        name: High
-        default: false
-        bitrate: 500
-        constraints:
-          width: 1280
-          height: 720
-          frameRate: 15
+      # - id: low-u30
+      #   name: low-u30
+      #   bitrate: 30
+      #   hidden: true
+      # - id: low-u25
+      #   name: low-u25
+      #   bitrate: 40
+      #   hidden: true
+      # - id: low-u20
+      #   name: low-u20
+      #   bitrate: 50
+      #   hidden: true
+      # - id: low-u15
+      #   name: low-u15
+      #   bitrate: 70
+      #   hidden: true
+      # - id: low-u12
+      #   name: low-u12
+      #   bitrate: 90
+      #   hidden: true
+      # - id: low-u8
+      #   name: low-u8
+      #   bitrate: 100
+      #   hidden: true
+      # - id: low
+      #   name: Low
+      #   default: false
+      #   bitrate: 100
+      # - id: medium
+      #   name: Medium
+      #   default: true
+      #   bitrate: 200
+      # - id: high
+      #   name: High
+      #   default: false
+      #   bitrate: 500
+      #   constraints:
+      #     width: 1280
+      #     height: 720
+      #     frameRate: 15
       - id: hd
         name: High definition
         default: false
@@ -404,7 +405,7 @@ public:
     # Default is undefined, which means the default setting in bbb-webrtc-sfu
     # prevails (videoMediaServer).
     #videoMediaServer: Kurento
-    autoShareWebcam: false
+    autoShareWebcam: true
     skipVideoPreview: false
     skipVideoPreviewOnFirstJoin: false
     # cameraSortingModes.paginationSorting: sorting mode to be applied when pagination is active
@@ -707,7 +708,7 @@ public:
     fileUploadConstraintsHint: false
     # mirroredFromBBBCore are values controlled in bbb-web properties file. We include a copy here for notification purposes
     mirroredFromBBBCore:
-      uploadSizeMax: 30000000
+      uploadSizeMax: 300000000
       uploadPagesMax: 200
     uploadValidMimeTypes:
       - extension: .pdf

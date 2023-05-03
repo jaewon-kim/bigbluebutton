@@ -414,10 +414,11 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
       current: true,
     });
     const encPwd = await axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password);
-
+    const email = 'admin@notary.com';
     console.log(encPwd);
     var rtnObj = {
-      "email":_user.extId,
+      //"email":_user.extId,
+      "email": email,
       "request_no" : 2,
       "notary_pwd" : encPwd.data,
       "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",

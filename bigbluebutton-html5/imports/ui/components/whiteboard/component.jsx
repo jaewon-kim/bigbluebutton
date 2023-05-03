@@ -18,6 +18,7 @@ import {
 } from '/imports/ui/stylesheets/styled-components/general';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
+import { ACTIONS, CAMERADOCK_POSITION } from '../layout/enums';
 
 import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
@@ -81,6 +82,7 @@ export default function Whiteboard(props) {
     sidebarNavigationWidth,
     animations,
     isToolbarVisible,
+    layoutContextDispatch,
   } = props;
 
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
@@ -142,6 +144,7 @@ export default function Whiteboard(props) {
     .catch((err)=>{
       console.log(err);
     })
+    
     
     
   }, []);
@@ -1260,12 +1263,18 @@ export default function Whiteboard(props) {
               signPassword)
               .then ((res)=>{
                 console.log(res);
-                //notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
+                if(res.data.errNo == '0'){
+                  notify('Success make pdf', 'info', 'warning');
+                }
+                else{
+                  notify(''+res.data.errNo+'::' + res.data.errMsg, 'info', 'warning');
+                }
+                
                 setShowLoading(false);
               })
               .catch( (err)=>{
                 console.log(err);
-                //notify('error', 'info', 'warning');
+                notify('error', 'info', 'warning');
                 setShowLoading(false);
               });
 
@@ -1380,7 +1389,7 @@ export default function Whiteboard(props) {
                 setIsDropdownOpen((isOpen) => !isOpen);
               }}
             >
-              For Notary
+              Signing Tools
               <Styled.ButtonIcon iconName="more" />
             </Styled.DropdownButton>
           

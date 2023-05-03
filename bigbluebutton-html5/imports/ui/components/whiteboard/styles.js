@@ -47,7 +47,7 @@ const Left = styled.div`
   position: absolute;
   left: 0px;
   right: auto;
-  bottom: -35px;
+  bottom: 5px;
   z-index: 999;
   box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid ${colorWhite};
@@ -62,7 +62,7 @@ const Left = styled.div`
 
   button {
     height: 100%;
-    width: 100px;
+    width: 140px;
   }
 
   [dir="rtl"] & {
