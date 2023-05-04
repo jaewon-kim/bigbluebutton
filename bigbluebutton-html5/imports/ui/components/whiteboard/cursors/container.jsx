@@ -5,7 +5,10 @@ import _ from 'lodash';
 import Cursors from './component';
 import Service from './service';
 
-const CursorsContainer = (props) => <Cursors {..._.omit(props, ['tldrawAPI'])} />;
+const CursorsContainer = (props) =>{
+  console.log(props)
+  return (<Cursors {..._.omit(props, ['tldrawAPI'])} ></Cursors>);
+} 
 
 export default withTracker((params) => (
   {

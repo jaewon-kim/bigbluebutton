@@ -94,15 +94,17 @@ const AppContainer = (props) => {
     && (presentationIsOpen || presentationRestoreOnUpdate)) && isPresentationEnabled();
 
   const { focusedId } = cameraDock;
-
-  if(
-    layoutContextDispatch 
-    &&  (typeof meetingLayout != "undefined")
-    && (layoutType.current != meetingLayout)
-    ) {
-      layoutType.current = meetingLayout;
-      MediaService.setPresentationIsOpen(layoutContextDispatch, true);
-  }
+  React.useEffect(() => {
+    if(
+      layoutContextDispatch 
+      &&  (typeof meetingLayout != "undefined")
+      && (layoutType.current != meetingLayout)
+      ) {
+        layoutType.current = meetingLayout;
+        MediaService.setPresentationIsOpen(layoutContextDispatch, true);
+    }
+  });
+  
 
   const horizontalPosition = cameraDock.position === 'contentLeft' || cameraDock.position === 'contentRight';
   // this is not exactly right yet

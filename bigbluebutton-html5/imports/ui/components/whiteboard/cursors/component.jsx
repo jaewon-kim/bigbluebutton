@@ -329,7 +329,7 @@ Cursors.propTypes = {
     zoom: PropTypes.number.isRequired,
   }),
   publishCursorUpdate: PropTypes.func.isRequired,
-  children: PropTypes.arrayOf(PropTypes.element).isRequired,
+  //children: PropTypes.arrayOf(PropTypes.element).isRequired, //jaewon Edit 화이트 보드에서 보내주지 않는 Props이고 에러가 발생하여 주석처리함
   isViewersCursorLocked: PropTypes.bool.isRequired,
   hasMultiUserAccess: PropTypes.func.isRequired,
   isMultiUserActive: PropTypes.func.isRequired,

@@ -396,30 +396,41 @@ const toggleToolsAnimations = (activeAnim, anim, time) => {
     topToolbar?.classList?.add(anim);}
   }
 const convertShapeToAnnotation =  async (_user,_document,_annotation, _password) => {
-  /*
-  console.log(_user);
-  console.log(_annotation);
-  
-  
-  
-
-  console.log(currentPresentation);
-  console.log(meetingT); 
-  */
-  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });
+   
   try {
-    console.log(_document);
-    console.log(meetingT);
+    const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });  
     const currentPresentation = Presentations.findOne({
       current: true,
     });
+    console.log('DOCUMENT=====================');
+    console.log(_document);
+    console.log('MEETINGINFO=====================');
+    console.log(meetingT);
+    console.log('USERINFO=====================');
+    console.log(_user);
+    console.log('ANNOTATIONS=====================');
+    console.log(_annotation);
+    console.log('PRESENTATION=====================');
+    console.log(currentPresentation);
+    var email = '';
+    var request_no = 0;
+    console.log(meetingT.metadataProp)
+    try{
+      email = meetingT.metadataProp.metadata.email;
+      request_no =  parseInt(meetingT.metadataProp.metadata.no);
+    }
+    catch(e){
+      console.log(e);
+    }
+    
+    
     const encPwd = await axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password);
-    const email = 'admin@notary.com';
+    
     console.log(encPwd);
     var rtnObj = {
       //"email":_user.extId,
       "email": email,
-      "request_no" : 2,
+      "request_no" : request_no,
       "notary_pwd" : encPwd.data,
       "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",
       "presentation": [{

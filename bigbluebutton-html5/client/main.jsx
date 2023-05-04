@@ -62,7 +62,7 @@ Meteor.startup(() => {
     // Chrome will add on "Uncaught" to the start of the message for some reason. This
     // will strip that so the errors can hopefully be grouped better.
     if (message) message = message.replace(/^Uncaught/, '').trim();
-
+    if(e.error == null)  return;
     let { stack } = e.error;
 
     // Checks if stack includes the message, if not add the two together.

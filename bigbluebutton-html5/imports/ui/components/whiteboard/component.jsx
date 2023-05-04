@@ -9,7 +9,6 @@ import Cursors from './cursors/container';
 import Settings from '/imports/ui/services/settings';
 import logger from '/imports/startup/client/logger';
 import BBBMenu from '/imports/ui/components/common/menu/component';
-import TooltipContainer from '/imports/ui/components/common/tooltip/container';
 import KEY_CODES from '/imports/utils/keyCodes';
 import {
   presentationMenuHeight,
@@ -18,7 +17,6 @@ import {
 } from '/imports/ui/stylesheets/styled-components/general';
 import Styled from './styles';
 import PanToolInjector from './pan-tool-injector/component';
-import { ACTIONS, CAMERADOCK_POSITION } from '../layout/enums';
 
 import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
@@ -82,7 +80,6 @@ export default function Whiteboard(props) {
     sidebarNavigationWidth,
     animations,
     isToolbarVisible,
-    layoutContextDispatch,
   } = props;
 
   const { pages, pageStates } = initDefaultPages(curPres?.pages.length || 1);
@@ -1290,7 +1287,7 @@ export default function Whiteboard(props) {
 
   const size = ((height < SMALL_HEIGHT) || (width < SMALL_WIDTH))
     ? TOOLBAR_SMALL : TOOLBAR_LARGE;
-
+  /*
   if (hasWBAccess || isPresenter) {
     if (((height < SMALLEST_HEIGHT) || (width < SMALLEST_WIDTH))) {
       tldrawAPI?.setSetting('dockPosition', 'bottom');
@@ -1298,6 +1295,7 @@ export default function Whiteboard(props) {
       tldrawAPI?.setSetting('dockPosition', isRTL ? 'left' : 'right');
     }
   }
+  */
 
   const menuOffsetValues = {
     true: {
