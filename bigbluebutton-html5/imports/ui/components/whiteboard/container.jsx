@@ -31,7 +31,7 @@ import { layoutSelect, layoutDispatch } from '../layout/context';
 import FullscreenService from '/imports/ui/components/common/fullscreen-button/service';
 import deviceInfo from '/imports/utils/deviceInfo';
 import Meetings from '/imports/api/meetings';
-import { makePdf ,checkPassword, listUserSignature } from '/imports/api/notary/notaryApi'
+import { makePdf ,checkPassword, listUserSignature, getUserIdCard } from '/imports/api/notary/notaryApi'
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 const WHITEBOARD_CONFIG = Meteor.settings.public.whiteboard;
@@ -59,6 +59,8 @@ const WhiteboardContainer = (props) => {
       && ((owner && owner === currentUser?.userId) || !owner || isPresenter || isModerator);
     return hasAccess;
   };
+
+  const meetingT = Meetings.findOne({ meetingId: Auth.meetingID });  
   // set shapes as locked for those who aren't allowed to edit it
   Object.entries(shapes).forEach(([shapeId, shape]) => {
     if (!shape.isLocked && !hasShapeAccess(shapeId)) {
@@ -83,6 +85,7 @@ const WhiteboardContainer = (props) => {
         handleToggleFullScreen,
         sidebarNavigationWidth,
         layoutContextDispatch,
+        meetingT
       }}
       {...props}
       meetingId={Auth.meetingID}
@@ -155,6 +158,7 @@ export default withTracker(({
     isIphone,
     convertShapeToAnnotation,
     listUserSignature,
+    getUserIdCard
   };
 })(WhiteboardContainer);
 

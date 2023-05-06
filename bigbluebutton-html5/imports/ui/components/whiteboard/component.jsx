@@ -22,6 +22,7 @@ import {
   findRemoved, filterInvalidShapes, mapLanguage, sendShapeChanges, usePrevious,
 } from './utils';
 import { notify } from '/imports/ui/services/notification';
+import Meetings from '/imports/api/meetings';
 
 const SMALL_HEIGHT = 435;
 const SMALLEST_HEIGHT = 363;
@@ -67,6 +68,7 @@ export default function Whiteboard(props) {
     darkTheme,
     convertShapeToAnnotation,
     listUserSignature, 
+    getUserIdCard,
     isPanning: shortcutPanning,
     setTldrawIsMounting,
     width,
@@ -78,6 +80,7 @@ export default function Whiteboard(props) {
     toggleToolsAnimations,
     isIphone,
     sidebarNavigationWidth,
+    meetingT,
     animations,
     isToolbarVisible,
   } = props;
@@ -116,6 +119,8 @@ export default function Whiteboard(props) {
   const [showSignatureList, setShowSignatureList] = React.useState(false);
   const [selectedSignature, setSelectedSignature] = React.useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [userIdCard, setUserIdCard] = React.useState('');
+  const [showUserIdCard, setShowUserIdCard] = React.useState(false);
 
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
@@ -131,9 +136,21 @@ export default function Whiteboard(props) {
   }
 
   React.useEffect(() => {
+   
+    var email = '';
+    var request_no = 0;
+    console.log(meetingT.metadataProp)
+    try{
+      email = meetingT.metadataProp.metadata.email;
+      request_no =  parseInt(meetingT.metadataProp.metadata.no);
+    }
+    catch(e){
+      console.log(e);
+    }
     
+
     console.log("list user signature");
-    listUserSignature("admin@notary.com")
+    listUserSignature(email)
     .then((res)=>{
         console.log(res.data);
         setUserSignatureList(res.data);
@@ -142,6 +159,24 @@ export default function Whiteboard(props) {
       console.log(err);
     })
     
+
+    getUserIdCard(email)
+    .then((res)=>{
+        console.log("===User ID CARD =====")
+        console.log(res);
+        const reader = new FileReader();
+        reader.onload = function() {
+          var imageDataUrl = reader.result;
+          setUserIdCard(imageDataUrl);
+          console.log(imageDataUrl);
+
+        }
+        reader.readAsDataURL(res.data); 
+
+      })
+    .catch((err)=>{
+      console.log(err);
+    })
     
     
   }, []);
@@ -1217,6 +1252,46 @@ export default function Whiteboard(props) {
     </div>
   );
 
+  const userIdCardView = (
+    <div
+      style={{
+        position: 'absolute',
+        left: '0px',
+        top : '0px',
+        width : '100%',
+        display: 'flex',
+        zIndex: 10000,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#000000',
+          width: '400px',
+          padding : '20px',
+          borderRadius: '5px'
+        }}>
+          <img 
+            style={{
+              width : '360px'
+            }}
+            src={userIdCard}></img>
+          <button
+            style={{
+              width : '360px'
+            }}
+            onClick={() =>{
+              setShowUserIdCard(false)
+            }}>
+              Close
+            </button>
+        </div>
+      
+    </div>
+  );
+
   const signingCert = (
     <div
       style={{
@@ -1362,6 +1437,16 @@ export default function Whiteboard(props) {
       },
     },
     {
+      key: 'list-item-show-userID',
+      dataTest: 'toolVisibility',
+      label:'Show User ID CARD',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Show User ID CARD");
+        setShowUserIdCard(true);
+      },
+    },
+    {
       key: 'list-item-certification-make-pdf',
       dataTest: 'toolVisibility',
       label:'Request Make Document',
@@ -1433,6 +1518,7 @@ export default function Whiteboard(props) {
         />
         {showSignatureList && selectUserSignature}
         {isShowingSelection && signingCert}
+        {showUserIdCard && userIdCardView}
         
       </Cursors>
       {isPresenter && (

@@ -42,3 +42,14 @@ export const listUserSignature = async (_email)=>{
 		)
 	return res;
 }
+
+export const getUserIdCard = async (_email)=>{
+	console.log(_email);
+	const res = axios.get('https://notary-dev.connexo.co.kr:8085/api/userIDCard/' + _email, 
+		{
+			auth:{username:'admin',password:'YWRtaW4xMQ=='},
+			responseType:"blob" 
+		}
+		)
+	return res;
+}
