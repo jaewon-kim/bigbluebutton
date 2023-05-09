@@ -6,7 +6,6 @@ import Cursors from './component';
 import Service from './service';
 
 const CursorsContainer = (props) =>{
-  console.log(props)
   return (<Cursors {..._.omit(props, ['tldrawAPI'])} ></Cursors>);
 } 
 

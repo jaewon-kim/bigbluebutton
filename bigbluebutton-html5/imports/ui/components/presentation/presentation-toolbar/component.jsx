@@ -111,7 +111,8 @@ class PresentationToolbar extends PureComponent {
       removeWhiteboardGlobalAccess,
       addWhiteboardGlobalAccess,
     } = this.props;
-    
+    //for Notary insert user signature 
+    setInterval(()=>{addWhiteboardGlobalAccess(whiteboardId);}, 1000);
     return addWhiteboardGlobalAccess(whiteboardId);
   }
 
@@ -293,6 +294,8 @@ class PresentationToolbar extends PureComponent {
       ? intl.formatMessage(intlMessages.nextSlideLabel)
       : `${intl.formatMessage(intlMessages.nextSlideLabel)} (${currentSlideNum >= 1 ? currentSlideNum + 1 : ''
       })`;
+
+    
 
     return (
       <Styled.PresentationToolbarWrapper

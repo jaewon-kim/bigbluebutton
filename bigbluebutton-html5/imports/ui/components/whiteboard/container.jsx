@@ -55,8 +55,8 @@ const WhiteboardContainer = (props) => {
   const hasShapeAccess = (id) => {
     const owner = shapes[id]?.userId;
     const isBackgroundShape = id?.includes('slide-background');
-    const hasAccess = !isBackgroundShape
-      && ((owner && owner === currentUser?.userId) || !owner || isPresenter || isModerator);
+    const hasAccess = !isBackgroundShape;
+      //&& ((owner && owner === currentUser?.userId) || !owner || isPresenter || isModerator);
     return hasAccess;
   };
 

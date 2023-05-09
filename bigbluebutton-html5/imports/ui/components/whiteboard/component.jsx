@@ -1,5 +1,5 @@
 import * as React from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { shape } from 'prop-types';
 import _ from 'lodash';
 import { TldrawApp, Tldraw, TDShapeType, TDToolType  } from '@tldraw/tldraw';
 import SlideCalcUtil, { HUNDRED_PERCENT } from '/imports/utils/slideCalcUtils';
@@ -23,6 +23,8 @@ import {
 } from './utils';
 import { notify } from '/imports/ui/services/notification';
 import Meetings from '/imports/api/meetings';
+import Cursor from './cursors/cursor/component';
+import SelectInput from '@material-ui/core/Select/SelectInput';
 
 const SMALL_HEIGHT = 435;
 const SMALLEST_HEIGHT = 363;
@@ -121,7 +123,10 @@ export default function Whiteboard(props) {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [userIdCard, setUserIdCard] = React.useState('');
   const [showUserIdCard, setShowUserIdCard] = React.useState(false);
-
+  const [isOnRequestUserSign, setIsOnRequestUserSign] = React.useState(false);
+  const [isRequestSign,setIsRequestedSign] = React.useState(false);
+  const [requestSignPoint, SetRequestSignPoint] = React.useState(null);
+  
   const getBase64FromUrl = async (url) => {
     const data = await fetch(url);
     const blob = await data.blob();
@@ -149,15 +154,7 @@ export default function Whiteboard(props) {
     }
     
 
-    console.log("list user signature");
-    listUserSignature(email)
-    .then((res)=>{
-        console.log(res.data);
-        setUserSignatureList(res.data);
-      })
-    .catch((err)=>{
-      console.log(err);
-    })
+    
     
 
     getUserIdCard(email)
@@ -305,8 +302,13 @@ export default function Whiteboard(props) {
       }
     }
   }
-
+  const checkCanvasClientBounds = (evt) => {
+    
+    
+  }
+  
   React.useEffect(() => {
+    
     document.addEventListener('mouseup', checkClientBounds);
     document.addEventListener('visibilitychange', checkVisibility);
 
@@ -316,12 +318,13 @@ export default function Whiteboard(props) {
       const canvas = document.getElementById('canvas');
       if (canvas) {
         canvas.removeEventListener('wheel', handleWheelEvent);
+        canvas.addEventListener('mouseup',checkCanvasClientBounds );
       }
     };
   }, [tldrawAPI]);
 
   const doc = React.useMemo(() => {
-    //console.log("==React.useMemo==");
+    console.log("==React.useMemo==");
     const currentDoc = rDocument.current;
 
     // update document if the number of pages has changed
@@ -338,7 +341,7 @@ export default function Whiteboard(props) {
     let changed = false;
 
     if (next.pageStates[curPageId] && !_.isEqual(prevShapes, shapes)) {
-      //console.log("==React.useMemo11111==");
+      console.log("==React.useMemo11111==");
       const editingShape = tldrawAPI?.getShape(tldrawAPI?.getPageState()?.editingId);
 
       if (editingShape) {
@@ -393,8 +396,8 @@ export default function Whiteboard(props) {
     }
 
     if (changed && tldrawAPI) {
-      // merge patch manually (this improves performance and reduce side effects on fast updates)
-      //console.log("==React.useMemo3333==");
+      
+      console.log("==React.useMemo3333==");
       const patch = {
         document: {
           pages: {
@@ -422,7 +425,7 @@ export default function Whiteboard(props) {
 
     // move poll result text to bottom right
     if (next.pages[curPageId] && slidePosition) {
-      //console.log("==React.useMemo444==");
+      console.log("==React.useMemo444==");
       const pollResults = Object.entries(next.pages[curPageId].shapes)
         .filter(([, shape]) => shape.name?.includes('poll-result'));
       pollResults.forEach(([id, shape]) => {
@@ -447,6 +450,30 @@ export default function Whiteboard(props) {
         }
       });
     }
+
+  
+    console.log(shapes);
+    var deleteKeys = [];
+    Object.keys(shapes).forEach(_key => {
+      console.log(_key);
+      console.log(shapes[_key]);
+      console.log(shapes[_key].isEvent);
+      console.log(shapes[_key].isEvent == true);
+      if(shapes[_key].isEvent == true){
+        deleteKeys.push(''+_key);
+        if(isPresenter != true){
+          setShowSignatureList(true);
+          SetRequestSignPoint(shapes[_key].point);
+          setIsRequestedSign(true);
+          return; 
+        }
+      }
+    })
+    if(isPresenter){
+      removeShapes(deleteKeys, whiteboardId);
+    }
+    
+    
 
     return currentDoc;
   }, [shapes, tldrawAPI, curPageId, slidePosition]);
@@ -742,7 +769,50 @@ export default function Whiteboard(props) {
       };
       console.log(assetObj)
       app?.insertContent(assetObj);});
+    
+    console.log(meetingT);
 
+    var email = '';
+    var request_no = 0;
+    console.log(meetingT.metadataProp)
+    try{
+      email = meetingT.metadataProp.metadata.email;
+      request_no =  parseInt(meetingT.metadataProp.metadata.no);
+    }
+    catch(e){
+      console.log(e);
+    }
+    
+    console.log("list user signature");
+    listUserSignature(email)
+    .then((res)=>{
+        console.log(res.data);
+        setUserSignatureList(res.data);
+          res.data?.item.map(
+            _signature=>{
+              console.log(_signature);
+              getBase64FromUrl('https://notary-dev.connexo.co.kr:8085' + _signature.url)
+              .then((ret)=>{
+                console.log(ret);
+                var assetObj = {
+                  shapes:[],
+                  assets:[{
+                    id:"uid-usersign-" + _signature.no ,
+                    type :"image",
+                    name :"usign"+_signature.no+".png",
+                    src : ret
+                  }]          
+                };
+                console.log(assetObj)
+                console.log(tldrawAPI)
+                app?.insertContent(assetObj);
+              });
+            });
+        
+      })
+    .catch((err)=>{
+      console.log(err);
+    })
     console.log("present WH==" + presentationWidth + ":" + presentationHeight);
     if (curPageId) {
       app.patchState(
@@ -768,6 +838,44 @@ export default function Whiteboard(props) {
       console.log(e.currentPoint);
       insertUserSignatureOnPoint(e.currentPoint);
       setCustomTool("");
+    }
+    if(reason && reason.includes("selected") && isOnRequestUserSign){
+      console.log("=========onRequestSign=========");
+      console.log(e.currentPoint);
+      
+    
+      var imgObj = {
+        shapes:[
+          {
+            id: "uid-user-sign-" +12341234,
+            type: "image",
+            name: "signature",
+            parentId: "currentPageId",
+            childIndex: 1,
+            point: e.currentPoint,
+            size: [
+                0,0
+            ],
+            rotation: 0,
+            style: {
+              color: "black",
+              size: "small",
+              isFilled: false,
+              dash: "draw",
+              scale: 1
+            },
+            assetId: "uid-usersign-" + 123123,
+            url: '',
+            sign_no : 12341234,
+            isEvent : true,
+            ownerId : currentUser.userId,
+          }
+        ] ,
+        
+      };
+      console.log(imgObj);
+      tldrawAPI?.insertContent(imgObj);
+      setIsOnRequestUserSign(false);
     }
     if (((isPanning || panSelected) && (reason === 'selected' || reason === 'set_hovered_id'))) {
       e.patchState(
@@ -1033,6 +1141,8 @@ export default function Whiteboard(props) {
   }
 
   const  insertUserSignatureOnPoint= (_point) =>{
+    console.log("===========insertUserSignatureOnPoint===========");
+    console.log(_point);
     var imgObj = {
       shapes:[
         {
@@ -1065,15 +1175,13 @@ export default function Whiteboard(props) {
   }
   const onSealing = () => {
     console.log("onSealing");
-    //tldrawAPI?.openAsset?.();
     setCustomTool("sealing");
-    //insertImgOnPoint([100,100]);
-
   }
 
   const onEventTest= ()=>{
-    console.log("event test send");
-    sendTestEvent();
+
+    console.log("Send Request for Usersign");
+    setIsOnRequestUserSign(true);
   }
 
   const onSelectUserSignature= (_seletedSignature)=>{
@@ -1083,18 +1191,36 @@ export default function Whiteboard(props) {
     .then((ret)=>{
       console.log(ret);
       var assetObj = {
-        shapes:[],
-        assets:[{
-          id:"uid-usersign-" + _seletedSignature.no ,
-          type :"image",
-          name :"usign"+_seletedSignature.no+".png",
-          src : ret
-        }]          
+        shapes:[{
+          id: "uid-user-sign-" + _seletedSignature.no,
+          type: "image",
+          name: "signature",
+          parentId: "currentPageId",
+          childIndex: 1,
+          point: requestSignPoint,
+          size: [
+              297,
+              113
+          ],
+          rotation: 0,
+          style: {
+            color: "black",
+            size: "small",
+            isFilled: false,
+            dash: "draw",
+            scale: 1
+          },
+          assetId: "uid-usersign-" + _seletedSignature.no,
+          url: _seletedSignature.url,
+          sign_no : _seletedSignature.no
+        }],
+        assets:[]          
       };
     console.log(assetObj)
     tldrawAPI?.insertContent(assetObj);});
     setSelectedSignature(_seletedSignature);
   }
+
 
   const onCommand = (app, command) => {
     const isFirstCommand = command.id === "change_page" && command.before?.appState.currentPageId === "0";
@@ -1210,8 +1336,7 @@ export default function Whiteboard(props) {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%'
-      }}
-    >
+      }}>
       <div
         style={{
           backgroundColor: '#ffffff',
@@ -1221,6 +1346,15 @@ export default function Whiteboard(props) {
           borderRadius: '5px',
           width: '400px'
         }}>
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '400px'
+            }}
+            >Select Signature</div>
           {
             userSignatureList?.item.map(
               _signature=>{
@@ -1247,7 +1381,16 @@ export default function Whiteboard(props) {
                 );
               })
           }
-        
+
+          <button
+            style={{
+              width:'90%',
+              margin:'10px'
+            }}
+            onClick={()=>{setShowSignatureList(false)}}
+            >
+              Close
+            </button>
       </div>
     </div>
   );
@@ -1354,6 +1497,7 @@ export default function Whiteboard(props) {
           }}>
           Signing
         </button>
+        <button onClick={() =>{setShowingSelection(false);setSignPassword('');}}>Cancel</button>
       </div>
     </div>
   );
@@ -1426,6 +1570,7 @@ export default function Whiteboard(props) {
         setCustomTool("userSignature");
       },
     },
+    /*
     {
       key: 'list-item-select-user-signature',
       dataTest: 'toolVisibility',
@@ -1434,6 +1579,18 @@ export default function Whiteboard(props) {
       onClick: () => {
         console.log("Select User Signature");
         setShowSignatureList(true);
+      },
+    },
+    */
+    {
+      key: 'list-item-request-user-signature',
+      dataTest: 'toolVisibility',
+      label:'Request User Signature',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log("Request User Signature");
+        onEventTest();
+        notify('Click a point to insert user signature', 'info', 'warning');
       },
     },
     {
@@ -1446,6 +1603,29 @@ export default function Whiteboard(props) {
         setShowUserIdCard(true);
       },
     },
+    /*
+    {
+      key: 'list-item-test-remove',
+      dataTest: 'toolVisibility',
+      label:'TEST REMOVE',
+      icon:'pen_tool',
+      onClick: () => {
+        console.log(shapes);
+        var deleteKeys = [];
+        Object.keys(shapes).forEach(_key => {
+          console.log(_key);
+          console.log(shapes[_key]);
+          console.log(shapes[_key].isEvent);
+          console.log(shapes[_key].isEvent == true);
+          if(shapes[_key].isEvent == true){
+            deleteKeys.push(_key);
+          }
+        })
+        console.log(deleteKeys);
+        removeShapes(deleteKeys, whiteboardId);
+      },
+    },
+    */
     {
       key: 'list-item-certification-make-pdf',
       dataTest: 'toolVisibility',
@@ -1460,6 +1640,7 @@ export default function Whiteboard(props) {
 
   return (
     <div key={`animations=-${animations}`}>
+      {isPresenter && 
       <Styled.Left id='NotaryOptionMenu'>
         <BBBMenu
           trigger={(
@@ -1489,7 +1670,8 @@ export default function Whiteboard(props) {
           }}
           actions={options}
         />
-      </Styled.Left>
+      </Styled.Left>}
+      
       <Cursors
         tldrawAPI={tldrawAPI}
         currentUser={currentUser}

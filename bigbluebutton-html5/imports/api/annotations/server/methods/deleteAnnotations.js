@@ -11,12 +11,19 @@ export default function deleteAnnotations(annotations, whiteboardId) {
 
   try {
     const { meetingId, requesterUserId } = extractCredentials(this.userId);
-
+    
     check(meetingId, String);
     check(requesterUserId, String);
     check(whiteboardId, String);
     check(annotations, Array);
 
+
+    Logger.info(`delete Annotations meetingId ${meetingId}`);
+    Logger.info(`delete Annotations requestUserId ${requesterUserId}`);
+    Logger.info(`delete Annotations WHITEBOARD ${whiteboardId}`);
+    Logger.info(`delete Annotations ${annotations}`);
+
+    
     const payload = {
       whiteboardId,
       annotationsIds: annotations,

@@ -36,7 +36,9 @@ export default function sendWhiteboardUserEvent(whiteboardId) {
             type:'event',
           },
           wbId:whiteboardId, 
-          userId:requesterUserId
+          userId:requesterUserId,
+          isStateful:false,
+          type:'event',
         }
       ],
       html5InstanceId: parseInt(process.env.INSTANCE_ID, 10) || 1

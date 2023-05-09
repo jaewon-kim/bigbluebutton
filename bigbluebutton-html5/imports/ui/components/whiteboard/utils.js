@@ -86,7 +86,7 @@ const filterInvalidShapes = (shapes, curPageId, tldrawAPI) => {
 
 const isValidShapeType = (shape) => {
   //const invalidTypes = ['image', 'video'];
-  const invalidTypes = [ 'video'];
+  const invalidTypes = ['video','event'];
   return !invalidTypes.includes(shape?.type);
 };
 
