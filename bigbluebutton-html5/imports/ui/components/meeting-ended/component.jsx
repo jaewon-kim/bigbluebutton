@@ -276,7 +276,7 @@ class MeetingEnded extends PureComponent {
             </Styled.Title>
             {!allowRedirectToLogoutURL() ? null : (
               <div>
-                {
+                { false &&
                   LearningDashboardService.isModerator()
                   && isLearningDashboardEnabled() === true
                   // Always set cookie in case Dashboard is already opened
@@ -294,15 +294,17 @@ class MeetingEnded extends PureComponent {
                     ) : null
                 }
                 <Styled.Text>
-                  {intl.formatMessage(intlMessage.messageEnded)}
+                  {false && intl.formatMessage(intlMessage.messageEnded)}
+                  Thank you for using notary service.<br/>
+                  Close the browser tab, please.
                 </Styled.Text>
 
-                <Styled.MeetingEndedButton
+                {false && <Styled.MeetingEndedButton
                   color="primary"
                   onClick={this.confirmRedirect}
                   label={intl.formatMessage(intlMessage.buttonOkay)}
                   description={intl.formatMessage(intlMessage.confirmDesc)}
-                />
+                />}
               </div>
             )}
           </Styled.Content>
