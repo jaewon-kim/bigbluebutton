@@ -432,6 +432,9 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
       "email": email,
       "request_no" : request_no,
       "notary_pwd" : encPwd.data,
+      "serverIP": "notary-dev.connexo.co.kr",
+      "serverPort" :10022,
+      "meetingId":meetingT.meetingId,
       "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",
       "presentation": [{
         "presentation_id" : currentPresentation.id,
