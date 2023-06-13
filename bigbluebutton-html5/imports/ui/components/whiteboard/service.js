@@ -424,7 +424,7 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
     }
     
     
-    const encPwd = await axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password);
+    const encPwd = await axios.get('https://dev-kr.notary-x.com:8085/encodePassword?pwd=' + _password);
     
     console.log(encPwd);
     var rtnObj = {
@@ -516,7 +516,7 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
 
     console.log(JSON.stringify(rtnObj));
     //console.log(rtnObj);
-    const resEnd = await axios.post('https://notary-dev.connexo.co.kr:8085/bbb/meeting/meetingEnd', rtnObj)
+    const resEnd = await axios.post('https://dev-kr.notary-x.com:8085/bbb/meeting/meetingEnd', rtnObj)
     return resEnd;
   }
   catch (err){

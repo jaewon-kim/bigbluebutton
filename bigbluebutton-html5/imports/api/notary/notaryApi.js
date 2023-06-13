@@ -13,7 +13,7 @@ export const makePdf = (_param) => {
 
 export const checkPassword = (_param) =>{
 	console.log(_param);
-	axios.post('https://notary-dev.connexo.co.kr:8085/bbb/meeting/checkPassword',_param)
+	axios.post('https://dev-kr.notary-x.com:8085/bbb/meeting/checkPassword',_param)
 	.then((res)=>{
 		console.log(res);
 	})
@@ -24,7 +24,7 @@ export const checkPassword = (_param) =>{
 
 export const encodePassword = (_password) =>{
 	console.log(_password);
-	axios.get('https://notary-dev.connexo.co.kr:8085/encodePassword?pwd=' + _password)
+	axios.get('https://dev-kr.notary-x.com:8085/encodePassword?pwd=' + _password)
 	.then( (res)=>{
 		console.log(res);
 	})
@@ -35,7 +35,7 @@ export const encodePassword = (_password) =>{
 
 export const listUserSignature = async (_email)=>{
 	console.log(_email);
-	const res = axios.get('https://notary-dev.connexo.co.kr:8085/api/listUserSign/' + _email, 
+	const res = axios.get('https://dev-kr.notary-x.com:8085/api/listUserSign/' + _email, 
 		{
 			auth:{username:'admin',password:'YWRtaW4xMQ=='},
 		}
@@ -45,7 +45,7 @@ export const listUserSignature = async (_email)=>{
 
 export const getUserIdCard = async (_email)=>{
 	console.log(_email);
-	const res = axios.get('https://notary-dev.connexo.co.kr:8085/api/userIDCard/' + _email, 
+	const res = axios.get('https://dev-kr.notary-x.com:8085/api/userIDCard/' + _email, 
 		{
 			auth:{username:'admin',password:'YWRtaW4xMQ=='},
 			responseType:"blob" 

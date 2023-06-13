@@ -266,7 +266,7 @@ public:
   kurento:
     #wsUrl: HOST
     #wsUrl: wss://bbb.project-asylum.info/bbb-webrtc-sfu
-    wsUrl: wss://bbb.connexo.co.kr/bbb-webrtc-sfu
+    wsUrl: wss://bbb-dev-kr.notary-x.com/bbb-webrtc-sfu
     cameraWsOptions:
       # Valid for video-provider. Time (ms) before its WS connection times out
       # and tries to reconnect.

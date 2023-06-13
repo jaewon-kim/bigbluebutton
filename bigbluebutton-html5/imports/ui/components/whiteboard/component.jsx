@@ -755,7 +755,7 @@ export default function Whiteboard(props) {
     if (history) {
       app.replaceHistory(history);
     }
-    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085/resources/getSeal?email=uevoli0000@hotmail.com')
+    getBase64FromUrl('https://dev-kr.notary-x.com:8085/resources/getSeal?email=uevoli0000@hotmail.com')
     .then((ret)=>{
       console.log(ret);
       var assetObj = {
@@ -791,7 +791,7 @@ export default function Whiteboard(props) {
           res.data?.item.map(
             _signature=>{
               console.log(_signature);
-              getBase64FromUrl('https://notary-dev.connexo.co.kr:8085' + _signature.url)
+              getBase64FromUrl('https://dev-kr.notary-x.com:8085' + _signature.url)
               .then((ret)=>{
                 console.log(ret);
                 var assetObj = {
@@ -1187,7 +1187,7 @@ export default function Whiteboard(props) {
   const onSelectUserSignature= (_seletedSignature)=>{
     console.log(_seletedSignature);
     setShowSignatureList(false);
-    getBase64FromUrl('https://notary-dev.connexo.co.kr:8085' + _seletedSignature.url)
+    getBase64FromUrl('https://dev-kr.notary-x.com:8085' + _seletedSignature.url)
     .then((ret)=>{
       console.log(ret);
       var assetObj = {
@@ -1371,7 +1371,7 @@ export default function Whiteboard(props) {
                     
                     >
                     <img
-                      src={ 'https://notary-dev.connexo.co.kr:8085'+ _signature.url }
+                      src={ 'https://dev-kr.notary-x.com:8085'+ _signature.url }
                       style={{
                         width:'60%'
                       }}
