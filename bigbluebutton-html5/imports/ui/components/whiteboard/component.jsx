@@ -829,20 +829,24 @@ export default function Whiteboard(props) {
 
   const onPatch = (e, t, reason) => {
     if (!e?.pageState || !reason) return;
+    //다음 클릭 시에 넣기 위하여 customTool에 설정 되어 있는 경우를 확인한다 sealing  입력
     if(reason && reason.includes("selected") && customTool == "sealing"){
       console.log(e.currentPoint);
       insertImgOnPoint(e.currentPoint);
       setCustomTool("");
     }
+
+    //이벤트를 받아서 선택한 사인을 넣기 위하여 사용함 
     if(reason && reason.includes("selected") && customTool == "userSignature"){
       console.log(e.currentPoint);
       insertUserSignatureOnPoint(e.currentPoint);
       setCustomTool("");
     }
+
+    //이벤트를 발생시키기 위하여 보이지 않는 shape 를 넣어서 이벤트를 대체 하여 사용함
     if(reason && reason.includes("selected") && isOnRequestUserSign){
       console.log("=========onRequestSign=========");
-      console.log(e.currentPoint);
-      
+      console.log(e.currentPoint);      
     
       var imgObj = {
         shapes:[
@@ -874,6 +878,7 @@ export default function Whiteboard(props) {
         
       };
       console.log(imgObj);
+      
       tldrawAPI?.insertContent(imgObj);
       setIsOnRequestUserSign(false);
     }
@@ -1141,6 +1146,7 @@ export default function Whiteboard(props) {
   }
 
   const  insertUserSignatureOnPoint= (_point) =>{
+    //실제로 사용자의 선택한 싸인 이미지를 정해진 위치에 넣는다. 
     console.log("===========insertUserSignatureOnPoint===========");
     console.log(_point);
     var imgObj = {
@@ -1178,7 +1184,7 @@ export default function Whiteboard(props) {
     setCustomTool("sealing");
   }
 
-  const onEventTest= ()=>{
+  const onEventSendSignature= ()=>{
 
     console.log("Send Request for Usersign");
     setIsOnRequestUserSign(true);
@@ -1465,6 +1471,7 @@ export default function Whiteboard(props) {
           >
           
         </input>
+        
         <button
           onClick={() =>{
             console.log(signPassword);
@@ -1529,6 +1536,7 @@ export default function Whiteboard(props) {
 
   const menuOffset = menuOffsetValues[isRTL][isIphone];
   const options = [];
+  //기능 메뉴를 Option을 통하여 구성함 
   options.push(
     {
       key: 'list-item-draw',
@@ -1589,7 +1597,7 @@ export default function Whiteboard(props) {
       icon:'pen_tool',
       onClick: () => {
         console.log("Request User Signature");
-        onEventTest();
+        onEventSendSignature();
         notify('Click a point to insert user signature', 'info', 'warning');
       },
     },
@@ -1642,6 +1650,7 @@ export default function Whiteboard(props) {
     <div key={`animations=-${animations}`}>
       {isPresenter && 
       <Styled.Left id='NotaryOptionMenu'>
+        
         <BBBMenu
           trigger={(
             
@@ -1698,6 +1707,7 @@ export default function Whiteboard(props) {
             isToolbarVisible,
           }}
         />
+       
         {showSignatureList && selectUserSignature}
         {isShowingSelection && signingCert}
         {showUserIdCard && userIdCardView}

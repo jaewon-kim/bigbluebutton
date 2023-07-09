@@ -395,6 +395,8 @@ const toggleToolsAnimations = (activeAnim, anim, time) => {
     tdTools?.classList?.add(anim);
     topToolbar?.classList?.add(anim);}
   }
+
+//Shape를 Annotation으로 변경하여 meeting End와 함께 Document 생성을 요청함 .
 const convertShapeToAnnotation =  async (_user,_document,_annotation, _password) => {
    
   try {
@@ -432,8 +434,8 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
       "email": email,
       "request_no" : request_no,
       "notary_pwd" : encPwd.data,
-      "serverIP": "notary-dev.connexo.co.kr",
-      "serverPort" :10022,
+      "serverIP": "notary-dev.connexo.co.kr", // 서버쪽 규격으로 레코딩 된 파일을 연동하기 위한 정보를 넣어 주면 됨
+      "serverPort" :10022, // 서버쪽 규격으로 레코딩 된 파일을 연동하기 위한 정보를 넣어 주면 됨
       "meetingId":meetingT.meetingId,
       "meeting_record_link":"https://bbb.connexo.co.kr/blhablha",
       "presentation": [{
@@ -516,7 +518,7 @@ const convertShapeToAnnotation =  async (_user,_document,_annotation, _password)
 
     console.log(JSON.stringify(rtnObj));
     //console.log(rtnObj);
-    const resEnd = await axios.post('https://dev-kr.notary-x.com:8085/bbb/meeting/meetingEnd', rtnObj)
+    const resEnd = await axios.post('https://dev-kr.notary-x.com:8085/bbb/meeting/meetingEnd', rtnObj);
     return resEnd;
   }
   catch (err){
